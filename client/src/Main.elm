@@ -104,26 +104,30 @@ update msg model =
 
 goTo : Maybe Route.Route -> Model -> ( Model, Cmd Msg )
 goTo destination model =
-    case destination of
-        Nothing ->
-            ( model, Cmd.none )
+    let
+        cmd =
+            case destination of
+                Nothing ->
+                    Cmd.none
 
-        Just Route.Root ->
-            ( model, static Landing )
+                Just Route.Root ->
+                    static Landing
 
-        Just Route.Pricing ->
-            ( model, static Pricing )
+                Just Route.Pricing ->
+                    static Pricing
 
-        Just (Route.Lesson code) ->
-            ( model, Task.perform (Loaded << Lesson) (Lesson.Page.init code) )
-
-        Just (Route.Loading route) ->
-            ( { model
-                | page = Transitioning { from = model.page }
-                , style = Animation.queue [ animate properties.loading ] model.style
-              }
-            , Tuple.second <| goTo (Just route) model
-            )
+                Just (Route.Lesson code) ->
+                    Task.perform (Loaded << Lesson) (Lesson.Page.init code)
+    in
+    if model.page == Blank then
+        ( model, cmd )
+    else
+        ( { model
+            | page = Transitioning { from = model.page }
+            , style = Animation.queue [ animate properties.loading ] model.style
+          }
+        , cmd
+        )
 
 
 static : Page -> Cmd Msg

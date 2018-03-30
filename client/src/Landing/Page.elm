@@ -51,7 +51,7 @@ view =
             , div
                 [ style [ ( "padding", "10px" ) ] ]
                 [ a
-                    [ Route.href <| Route.Loading <| Route.Lesson "0000"
+                    [ Route.href <| Route.Lesson "0000"
                     , class "link"
                     , style
                         [ ( "color", Palette.invert Palette.primary )
@@ -60,7 +60,7 @@ view =
                     ]
                     [ text "Start lesson 1" ]
                 , a
-                    [ Route.href <| Route.Loading Route.Pricing
+                    [ Route.href Route.Pricing
                     , class "link"
                     , style
                         [ ( "color", Palette.primary )
