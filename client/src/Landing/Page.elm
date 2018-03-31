@@ -1,10 +1,9 @@
 module Landing.Page exposing (view)
 
-import Char
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Palette
 import Route
+import Ui
 
 
 view : Html msg
@@ -50,24 +49,12 @@ view =
         """ ]
             , div
                 [ style [ ( "padding", "10px" ) ] ]
-                [ a
-                    [ Route.href <| Route.Lesson "0000"
-                    , class "link"
-                    , style
-                        [ ( "color", Palette.invert Palette.primary )
-                        , ( "background-color", Palette.primary )
-                        ]
-                    ]
-                    [ text "Start lesson 1" ]
-                , a
-                    [ Route.href Route.Pricing
-                    , class "link"
-                    , style
-                        [ ( "color", Palette.primary )
-                        , ( "border-color", Palette.primary )
-                        ]
-                    ]
-                    [ text "Learn more" ]
+                [ Ui.link (Ui.Background Ui.Primary)
+                    [ Route.href <| Route.Lesson "0000" ]
+                    "Start lesson 1"
+                , Ui.link (Ui.Foreground Ui.Primary)
+                    [ Route.href Route.Pricing ]
+                    "Learn more"
                 ]
             ]
         , object

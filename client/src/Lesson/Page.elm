@@ -3,8 +3,8 @@ module Lesson.Page exposing (Model, Msg, init, update, view)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Palette
 import Task exposing (Task)
+import Ui
 
 
 type alias Model =
@@ -60,27 +60,14 @@ view model =
                 , ( "justify-content", "center" )
                 , ( "width", "100vw" )
                 , ( "height", "65px" )
-                , ( "border-top", "2px " ++ Palette.light ++ " solid" )
                 ]
+            , Ui.border Ui.Top Ui.Light
             ]
           <|
             List.concat
-                [ [ a
-                        [ class "link"
-                        , style [ ( "color", Palette.primary ) ]
-                        ]
-                        [ text "Previous" ]
-                  ]
+                [ [ Ui.link (Ui.Foreground Ui.Primary) [] "Previous" ]
                 , List.indexedMap viewProgress model.items
-                , [ a
-                        [ class "link"
-                        , style
-                            [ ( "background-color", Palette.primary )
-                            , ( "color", Palette.invert Palette.primary )
-                            ]
-                        ]
-                        [ text "Next" ]
-                  ]
+                , [ Ui.link (Ui.Background Ui.Primary) [] "Next" ]
                 ]
         ]
 
@@ -88,24 +75,10 @@ view model =
 viewProgress : Int -> Item -> Html Msg
 viewProgress index item =
     let
-        clickable =
-            if False then
-                [ style
-                    [ ( "color", Palette.primary )
-                    ]
-                , onClick <| JumpTo index
-                ]
+        ( ui, interaction ) =
+            if True {- CLICKABLE -} then
+                ( Ui.Foreground Ui.Primary, [ onClick <| JumpTo index ] )
             else
-                [ style [ ( "color", Palette.light ) ]
-                , disabled True
-                ]
+                ( Ui.Foreground Ui.Light, [ disabled True ] )
     in
-    a
-        (List.concat
-            [ clickable
-            , [ class "link"
-              , style [ ( "margin", "0 15px" ) ]
-              ]
-            ]
-        )
-        [ text "○" ]
+    Ui.link ui (style [ ( "margin", "0 15px" ) ] :: interaction) "○"

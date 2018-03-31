@@ -2,7 +2,6 @@ module Pricing.Page exposing (view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Palette
 
 
 view : Html msg
@@ -17,22 +16,5 @@ view =
             , ( "height", "100vh" )
             ]
         ]
-        [ h1
-            [ style [ ( "grid-area", "info" ) ] ]
-            [ text "About Excelsior" ]
-        , a
-            [ class "button"
-            , style
-                [ ( "grid-area", "a" )
-                , ( "background-color", Palette.primary )
-                ]
-            ]
-            [ text "Option 1" ]
-        , a
-            [ class "button"
-            , style
-                [ ( "grid-area", "b" )
-                ]
-            ]
-            [ text "Option 2" ]
+        [ text "Hello, World!"
         ]
