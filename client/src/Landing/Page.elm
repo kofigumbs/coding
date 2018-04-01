@@ -12,6 +12,8 @@ view =
         [ style
             [ ( "width", "100vw" )
             , ( "height", "100vh" )
+            , ( "max-width", "1080px" )
+            , ( "margin", "0 auto" )
             , ( "display", "flex" )
             , ( "flex-direction", "row" )
             , ( "align-items", "center" )
@@ -20,41 +22,17 @@ view =
         [ div
             [ style
                 [ ( "flex", "1" )
-                , ( "padding", "80px" )
+                , ( "padding", "25px" )
                 ]
             ]
-            [ h1 [ style [ ( "margin", "0" ) ] ] [ text "A coding course" ]
-            , h1 [ style [ ( "margin", "0" ) ] ] [ text "Designed for Excel users" ]
-            , p
-                []
-                [ text """
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-        nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-        reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
-        qui officia deserunt mollit anim id est laborum.
-        """ ]
-            , p
-                []
-                [ text """
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-        nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-        reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
-        qui officia deserunt mollit anim id est laborum.
-        """ ]
+            [ h1 [ noMargin ] [ text "A coding course" ]
+            , h1 [ noMargin ] [ text "Designed for Excel users" ]
+            , fakeParagraph
+            , fakeParagraph
             , div
-                [ style [ ( "padding", "10px" ) ] ]
-                [ Ui.link (Ui.Background Ui.Primary)
-                    [ Route.href <| Route.Lesson "0000" ]
-                    "Start lesson 1"
-                , Ui.link (Ui.Foreground Ui.Primary)
-                    [ Route.href Route.Pricing ]
-                    "Learn more"
+                []
+                [ startLink
+                , learnLink
                 ]
             ]
         , object
@@ -68,3 +46,35 @@ view =
             ]
             []
         ]
+
+
+startLink : Html msg
+startLink =
+    "Start lesson 1"
+        |> Ui.link (Ui.Background Ui.Primary) [ Route.href <| Route.Lesson "0000" ]
+
+
+learnLink : Html msg
+learnLink =
+    "Learn more"
+        |> Ui.link (Ui.Foreground Ui.Primary) [ Route.href Route.Pricing ]
+
+
+fakeParagraph : Html msg
+fakeParagraph =
+    p
+        []
+        [ text """
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+        nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+        reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
+        qui officia deserunt mollit anim id est laborum.
+        """ ]
+
+
+noMargin : Attribute msg
+noMargin =
+    style [ ( "margin", "0" ) ]

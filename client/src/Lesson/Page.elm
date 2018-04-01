@@ -74,11 +74,7 @@ view model =
 
 viewProgress : Int -> Item -> Html Msg
 viewProgress index item =
-    let
-        ( ui, interaction ) =
-            if True {- CLICKABLE -} then
-                ( Ui.Foreground Ui.Primary, [ onClick <| JumpTo index ] )
-            else
-                ( Ui.Foreground Ui.Light, [ disabled True ] )
-    in
-    Ui.link ui (style [ ( "margin", "0 15px" ) ] :: interaction) "○"
+    if True {- CLICKABLE -} then
+        Ui.link (Ui.Foreground Ui.Primary) [ onClick <| JumpTo index ] "○"
+    else
+        Ui.link (Ui.Foreground Ui.Light) [ disabled True ] "○"
