@@ -2,14 +2,14 @@ module Lesson.Page exposing (Model, Msg, init, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import SelectList exposing (SelectList)
 import Task exposing (Task)
 import Ui
 
 
 type alias Model =
     { code : String
-    , items : List Item
+    , items : SelectList Item
     }
 
 
@@ -26,10 +26,12 @@ init code =
     Task.succeed
         { code = code
         , items =
-            [ Text "Hello, World"
-            , Text "Oh, hi there?"
-            , Text "Bye bye."
-            ]
+            SelectList.fromLists
+                []
+                (Text "Hello, World")
+                [ Text "Oh, hi there?"
+                , Text "Bye bye."
+                ]
         }
 
 
@@ -51,7 +53,7 @@ view model =
         [ div
             [ style [ ( "flex", "1" ) ]
             ]
-            []
+            [{- TODO: content -}]
         , nav
             [ style
                 [ ( "display", "flex" )
@@ -63,18 +65,19 @@ view model =
                 ]
             , Ui.border Ui.Top Ui.Light
             ]
-          <|
-            List.concat
-                [ [ Ui.link (Ui.Foreground Ui.Primary) [] "Previous" ]
-                , List.indexedMap viewProgress model.items
-                , [ Ui.link (Ui.Background Ui.Primary) [] "Next" ]
-                ]
+            [ Ui.link (Ui.Foreground Ui.Primary) [] "Previous"
+            , viewProgress model.items
+            , Ui.link (Ui.Background Ui.Primary) [] "Next"
+            ]
         ]
 
 
-viewProgress : Int -> Item -> Html Msg
-viewProgress index item =
-    if True {- CLICKABLE -} then
-        Ui.link (Ui.Foreground Ui.Primary) [ onClick <| JumpTo index ] "○"
-    else
-        Ui.link (Ui.Foreground Ui.Light) [ disabled True ] "○"
+viewProgress : SelectList a -> Html msg
+viewProgress items =
+    div
+        [ style [ ( "margin", "0 10px" ) ] ]
+        [ text <|
+            toString (List.length (SelectList.before items) + 1)
+                ++ " / "
+                ++ toString (List.length (SelectList.toList items))
+        ]
