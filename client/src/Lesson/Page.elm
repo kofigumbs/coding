@@ -148,7 +148,11 @@ viewHint =
 viewProgress : Sequence a -> Html msg
 viewProgress items =
     div
-        [ style [ ( "margin", "0 10px" ) ] ]
+        [ style
+            [ ( "margin", "0 10px" )
+            , ( "font-family", "monospace" )
+            ]
+        ]
         [ sup [] [ text <| toString <| Lesson.Sequence.countSoFar items ]
         , text <| String.fromChar <| Char.fromCode 0x2044
         , sub [] [ text <| toString <| Lesson.Sequence.countTotal items ]
