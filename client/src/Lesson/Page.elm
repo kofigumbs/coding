@@ -65,9 +65,9 @@ view model =
                 ]
             , Ui.border Ui.Top Ui.Light
             ]
-            [ Ui.link (Ui.Foreground Ui.Primary) [] "Previous"
+            [ Ui.button (Ui.Foreground Ui.Primary) [] "Previous"
             , viewProgress model.items
-            , Ui.link (Ui.Background Ui.Primary) [] "Next"
+            , Ui.button (Ui.Background Ui.Primary) [] "Next"
             ]
         ]
 

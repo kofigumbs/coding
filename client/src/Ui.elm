@@ -1,4 +1,4 @@
-module Ui exposing (Border(..), Color(..), Link(..), border, link)
+module Ui exposing (Border(..), Color(..), Link(..), border, button)
 
 import Html
 import Html.Attributes
@@ -34,8 +34,8 @@ border config color =
     Html.Attributes.style [ ( name, "2px " ++ toCss color ++ " solid" ) ]
 
 
-link : Link -> List (Html.Attribute msg) -> String -> Html.Html msg
-link config userAttributes text =
+button : Link -> List (Html.Attribute msg) -> String -> Html.Html msg
+button config userAttributes text =
     let
         allAttributes =
             case config of
@@ -53,7 +53,7 @@ link config userAttributes text =
                         :: border All color
                         :: userAttributes
     in
-    Html.a (Html.Attributes.class "link" :: allAttributes) [ Html.text text ]
+    Html.a (Html.Attributes.class "button" :: allAttributes) [ Html.text text ]
 
 
 {-| <https://color.adobe.com/explore/?q=hex%3A+21ce99>

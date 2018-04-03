@@ -28,7 +28,7 @@ code, pre {
   font-family: monospace;
 }
 
-.link {
+.button {
   padding: 10px 15px;
   margin: 10px;
   border-radius: 3px;
@@ -37,7 +37,7 @@ code, pre {
   font-weight: 900;
 }
 
-.link:hover {
+.button:hover {
   -webkit-filter: brightness(95%);
   -webkit-transition: all 0.2s ease;
   -moz-transition: all 0.2s ease;

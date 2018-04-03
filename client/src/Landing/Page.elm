@@ -51,13 +51,13 @@ view =
 startLink : Html msg
 startLink =
     "Start lesson 1"
-        |> Ui.link (Ui.Background Ui.Primary) [ Route.href <| Route.Lesson "0000" ]
+        |> Ui.button (Ui.Background Ui.Primary) [ Route.href <| Route.Lesson "0000" ]
 
 
 learnLink : Html msg
 learnLink =
     "Learn more"
-        |> Ui.link (Ui.Foreground Ui.Primary) [ Route.href Route.Pricing ]
+        |> Ui.button (Ui.Foreground Ui.Primary) [ Route.href Route.Pricing ]
 
 
 fakeParagraph : Html msg
