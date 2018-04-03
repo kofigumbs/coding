@@ -1,4 +1,4 @@
-module Ui exposing (Border(..), Color(..), Link(..), border, button)
+module Ui exposing (Border(..), Color(..), Link(..), border, button, code)
 
 import Html
 import Html.Attributes
@@ -32,6 +32,17 @@ border config color =
                     "border"
     in
     Html.Attributes.style [ ( name, "2px " ++ toCss color ++ " solid" ) ]
+
+
+code : List (Html.Html msg) -> Html.Html msg
+code =
+    Html.div
+        [ Html.Attributes.style
+            [ ( "font-family", "monospace" )
+            , ( "padding", "25px" )
+            , ( "background-color", toCss Light )
+            ]
+        ]
 
 
 button : Link -> List (Html.Attribute msg) -> String -> Html.Html msg

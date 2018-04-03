@@ -1,4 +1,4 @@
-module Lesson.Sequence exposing (Sequence, countSoFar, countTotal, current, decode, next, previous)
+module Lesson.Sequence exposing (Sequence, countSoFar, countTotal, current, decoder, next, previous)
 
 import Json.Decode
 
@@ -7,8 +7,8 @@ type Sequence a
     = Sequence (List a) a (List a)
 
 
-decode : Json.Decode.Decoder a -> Json.Decode.Decoder (Sequence a)
-decode item =
+decoder : Json.Decode.Decoder a -> Json.Decode.Decoder (Sequence a)
+decoder item =
     Json.Decode.list item
         |> Json.Decode.andThen
             (\list ->

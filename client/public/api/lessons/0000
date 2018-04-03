@@ -2,11 +2,40 @@
     "items": [
         {
             "type": "TEXT",
-            "content": "# Welcome!\n\nHere are some details about the course:\n - One fish\n - Two fish\n - Red fish\n - Blue fish\n"
+            "content": "# Welcome!\n\nHere are some details about the course:\n - One fish\n - Two fish\n - Red fish\n - Blue fish\n\nWe will be using Elm!\n"
+        },
+        {
+            "type": "SAMPLE_CODE",
+            "description": "# Your first Elm file",
+            "imports": [
+                {
+                    "type": "IMPORT",
+                    "hint": "An **import** line lets us pull **values** from other files into our current file. This `import` is pulling from the `Html` library, which will let us put stuff on the page.",
+                    "module": "Html",
+                    "exposing": [
+                        {
+                            "hint": "This is the most basic way to get something on the screen with Elm.",
+                            "name": "text"
+                        }
+                    ]
+                }
+            ],
+            "declarations": [
+                {
+                    "type": "FUNCTION",
+                    "hint": "`greeting` is a **value** that holds a **String**. Strings work just like quotes in Excel: anything in between them is treated as regular text.",
+                    "value": "greeting = \"Hello, World!\""
+                },
+                {
+                    "type": "FUNCTION",
+                    "hint": "`main` is a special **value** that tells Elm what to draw on the page. We can use `text`, which we imported from `Html`, to create these kinds of values.",
+                    "value": "main = text greeting"
+                }
+            ]
         },
         {
             "type": "TEXT",
-            "content": "# You made it!\n\n## This is the second item in the lesson."
+            "content": "# You made it!\n\n## This is the last item in the lesson."
         }
     ]
 }
