@@ -3,7 +3,7 @@
 const app = require("express")();
 const bodyParser = require("body-parser");
 
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 
 // COMPILE
@@ -15,7 +15,7 @@ const elm = require("node-elm-compiler");
 
 const flags = { warn: true, yes: true, report: "json" };
 
-app.post("/compile", function (request, response) {
+app.post("/compile", (request, response) => {
   temp.open({ suffix: 'elm' }, (tempError, { fd, path }) => {
     assert(!tempError);
     fs.write(fd, request.body.elm, fsError => {
@@ -33,6 +33,4 @@ app.post("/compile", function (request, response) {
 
 const port = process.env["PORT"] || 3000;
 
-app.listen(port, function() {
-  console.log(`Listening on port ${port}...`);
-});
+app.listen(port, () => console.log(`Listening on port ${port}...`));
