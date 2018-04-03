@@ -1,0 +1,12 @@
+{
+    "items": [
+        {
+            "type": "TEXT",
+            "content": "# Welcome!\n\nHere are some details about the course:\n - One fish\n - Two fish\n - Red fish\n - Blue fish\n"
+        },
+        {
+            "type": "TEXT",
+            "content": "# You made it!\n\n## This is the second item in the lesson."
+        }
+    ]
+}

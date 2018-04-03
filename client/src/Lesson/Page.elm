@@ -4,6 +4,8 @@ import Char
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Http
+import Json.Decode
 import Lesson.Sequence exposing (Sequence)
 import Markdown
 import Task exposing (Task)
@@ -27,15 +29,31 @@ type Msg
 
 init : String -> Task Never Model
 init code =
-    Task.succeed
-        { code = code
-        , items =
-            Lesson.Sequence.fromStart
-                (Text "Hello, World")
-                [ Text "Oh, hi there?"
-                , Text "Bye bye."
-                ]
-        }
+    Task.map (Model code)
+        (getItems code)
+
+
+getItems : String -> Task Never (Sequence Item)
+getItems code =
+    Http.get ("/api/lessons/" ++ code)
+        (Json.Decode.field "items" <|
+            Lesson.Sequence.decode <|
+                Json.Decode.andThen parseItem
+                    (Json.Decode.field "type" Json.Decode.string)
+        )
+        |> Http.toTask
+        |> Task.onError ({- TODO -} toString >> Debug.crash)
+
+
+parseItem : String -> Json.Decode.Decoder Item
+parseItem type_ =
+    case type_ of
+        "TEXT" ->
+            Json.Decode.map Text
+                (Json.Decode.field "content" Json.Decode.string)
+
+        invalid ->
+            Json.Decode.fail <| "`" ++ invalid ++ "`" ++ "is not an item type"
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

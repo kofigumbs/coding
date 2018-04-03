@@ -1,13 +1,24 @@
-module Lesson.Sequence exposing (Sequence, countSoFar, countTotal, current, fromStart, next, previous)
+module Lesson.Sequence exposing (Sequence, countSoFar, countTotal, current, decode, next, previous)
+
+import Json.Decode
 
 
 type Sequence a
     = Sequence (List a) a (List a)
 
 
-fromStart : a -> List a -> Sequence a
-fromStart =
-    Sequence []
+decode : Json.Decode.Decoder a -> Json.Decode.Decoder (Sequence a)
+decode item =
+    Json.Decode.list item
+        |> Json.Decode.andThen
+            (\list ->
+                case list of
+                    [] ->
+                        Json.Decode.fail "sequences cannot be empty"
+
+                    first :: rest ->
+                        Json.Decode.succeed <| Sequence [] first rest
+            )
 
 
 next : Sequence a -> Sequence a
@@ -27,7 +38,7 @@ previous ((Sequence before this after) as initial) =
             initial
 
         first :: rest ->
-            Sequence before first (this :: rest)
+            Sequence rest first (this :: after)
 
 
 current : Sequence a -> a
