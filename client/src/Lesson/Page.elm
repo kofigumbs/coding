@@ -10,7 +10,6 @@ import Lesson.SampleCode exposing (SampleCode)
 import Lesson.Sequence exposing (Sequence)
 import Markdown
 import Task exposing (Task)
-import Ui
 
 
 type alias Model =
@@ -103,11 +102,12 @@ view model =
                 , ( "width", "100vw" )
                 , ( "height", "65px" )
                 ]
-            , Ui.border Ui.Top Ui.Light
+
+            -- , Ui.border Ui.Top Ui.Light
             ]
-            [ Ui.button (Ui.Foreground Ui.Primary) [ onClick Previous ] "Previous"
+            [ button [ class "button", onClick Previous ] [ text "Previous" ]
             , viewProgress model.items
-            , Ui.button (Ui.Background Ui.Primary) [ onClick Next ] "Next"
+            , button [ class "button is-primary", onClick Next ] [ text "Next" ]
             ]
         ]
 
@@ -136,7 +136,8 @@ viewItem item =
 
 viewSampleCode : SampleCode -> Html Msg
 viewSampleCode { imports, declarations } =
-    Ui.code
+    code
+        []
         [ text <| toString declarations ]
 
 

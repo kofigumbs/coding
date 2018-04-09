@@ -1,4 +1,4 @@
-import './main.css';
+import 'bulma/css/bulma.css';
 import { Main } from './Main.elm';
 import registerServiceWorker from './registerServiceWorker';
 

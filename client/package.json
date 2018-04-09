@@ -6,5 +6,6 @@
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
+    "bulma": "^0.6.2"
   }
 }

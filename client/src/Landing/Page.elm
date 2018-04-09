@@ -3,7 +3,6 @@ module Landing.Page exposing (view)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Route
-import Ui
 
 
 view : Html msg
@@ -25,9 +24,8 @@ view =
                 , ( "padding", "25px" )
                 ]
             ]
-            [ h1 [ noMargin ] [ text "A coding course" ]
-            , h1 [ noMargin ] [ text "Designed for Excel users" ]
-            , fakeParagraph
+            [ h1 [ class "title", noMargin ] [ text "A coding course" ]
+            , h1 [ class "title", noMargin ] [ text "Designed for Excel users" ]
             , fakeParagraph
             , div
                 []
@@ -50,14 +48,20 @@ view =
 
 startLink : Html msg
 startLink =
-    "Start lesson 1"
-        |> Ui.button (Ui.Background Ui.Primary) [ Route.href <| Route.Lesson "0000" ]
+    a
+        [ class "button is-primary"
+        , Route.href <| Route.Lesson "0000"
+        ]
+        [ text "Start lesson 1" ]
 
 
 learnLink : Html msg
 learnLink =
-    "Learn more"
-        |> Ui.button (Ui.Foreground Ui.Primary) [ Route.href Route.Pricing ]
+    a
+        [ class "button"
+        , Route.href Route.Pricing
+        ]
+        [ text "Learn more" ]
 
 
 fakeParagraph : Html msg

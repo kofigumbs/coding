@@ -137,7 +137,7 @@ static =
 
 view : Model -> Html.Html Msg
 view model =
-    Html.div (Animation.render model.style) [ viewPage model.page ]
+    Html.main_ (Animation.render model.style) [ viewPage model.page ]
 
 
 viewPage : Page -> Html.Html Msg
