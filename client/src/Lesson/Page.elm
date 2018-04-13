@@ -6,7 +6,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode
-import Lesson.SampleCode exposing (SampleCode)
+import Lesson.Code exposing (Code)
 import Lesson.Sequence exposing (Sequence)
 import Markdown
 import Task exposing (Task)
@@ -18,9 +18,11 @@ type alias Model =
     }
 
 
-type Item
-    = Text String
-    | SampleCode { description : String, hint : Maybe String } SampleCode
+type alias Item =
+    { title : String
+    , content : String
+    , code : Code
+    }
 
 
 type Msg
@@ -34,33 +36,14 @@ init code =
         (Json.Decode.map (Model code)
             (Json.Decode.field "items" <|
                 Lesson.Sequence.decoder <|
-                    Json.Decode.andThen parseItem
-                        (Json.Decode.field "type" Json.Decode.string)
+                    Json.Decode.map3 Item
+                        (Json.Decode.field "title" Json.Decode.string)
+                        (Json.Decode.field "content" Json.Decode.string)
+                        (Json.Decode.field "code" Lesson.Code.decoder)
             )
         )
         |> Http.toTask
         |> Task.onError ({- TODO -} toString >> Debug.crash)
-
-
-parseItem : String -> Json.Decode.Decoder Item
-parseItem type_ =
-    case type_ of
-        "TEXT" ->
-            Json.Decode.map Text
-                (Json.Decode.field "content" Json.Decode.string)
-
-        "SAMPLE_CODE" ->
-            Json.Decode.map2 SampleCode
-                (Json.Decode.map
-                    (\description ->
-                        { description = description, hint = Nothing }
-                    )
-                    (Json.Decode.field "description" Json.Decode.string)
-                )
-                Lesson.SampleCode.decoder
-
-        invalid ->
-            Json.Decode.fail <| "`" ++ invalid ++ "`" ++ "is not an item type"
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -114,36 +97,29 @@ view model =
 
 viewItem : Item -> Html Msg
 viewItem item =
-    case item of
-        Text content ->
-            markdown content
-
-        SampleCode { description, hint } code ->
-            div []
-                [ markdown description
-                , div
-                    [ style [ ( "display", "flex" ) ]
-                    ]
-                    [ div
-                        [ style [ ( "flex", "2" ) ] ]
-                        [ viewSampleCode code ]
-                    , div
-                        [ style [ ( "flex", "1" ), ( "padding", "0 15px" ) ] ]
-                        [ viewHint hint ]
-                    ]
-                ]
-
-
-viewSampleCode : SampleCode -> Html Msg
-viewSampleCode { imports, declarations } =
-    code
+    div
         []
-        [ text <| toString declarations ]
+        [ h1 [ class "title" ] [ text item.title ]
+        , div
+            [ class "columns" ]
+            [ div
+                [ class "column is-half" ]
+                [ pre [] [ code [] <| List.map viewCode item.code.rendered ] ]
+            , div
+                [ class "column is-half" ]
+                [ div [ class "content" ] [ markdown item.content ] ]
+            ]
+        ]
 
 
-viewHint : Maybe String -> Html Msg
-viewHint =
-    Maybe.withDefault "_Click some code to learn more!_" >> markdown
+viewCode : Lesson.Code.Render -> Html msg
+viewCode rendered =
+    case rendered of
+        Lesson.Code.Raw content ->
+            text content
+
+        Lesson.Code.Focus content ->
+            strong [ class "has-text-info" ] [ text content ]
 
 
 viewProgress : Sequence a -> Html msg
