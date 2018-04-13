@@ -1,10 +1,10 @@
-module Lesson.Sequence exposing (Sequence, countSoFar, countTotal, current, decoder, next, previous)
+module Lesson.Sequence exposing (Sequence, current, decoder, select, toList)
 
 import Json.Decode
 
 
 type Sequence a
-    = Sequence (List a) a (List a)
+    = Sequence { before : List a, this : a, after : List a }
 
 
 decoder : Json.Decode.Decoder a -> Json.Decode.Decoder (Sequence a)
@@ -17,40 +17,42 @@ decoder item =
                         Json.Decode.fail "sequences cannot be empty"
 
                     first :: rest ->
-                        Json.Decode.succeed <| Sequence [] first rest
+                        Json.Decode.succeed <|
+                            Sequence { before = [], this = first, after = rest }
             )
 
 
-next : Sequence a -> Sequence a
-next ((Sequence before this after) as initial) =
-    case after of
-        [] ->
-            initial
-
-        first :: rest ->
-            Sequence (this :: before) first rest
-
-
-previous : Sequence a -> Sequence a
-previous ((Sequence before this after) as initial) =
-    case before of
-        [] ->
-            initial
-
-        first :: rest ->
-            Sequence rest first (this :: after)
-
-
 current : Sequence a -> a
-current (Sequence _ this _) =
+current (Sequence { this }) =
     this
 
 
-countTotal : Sequence a -> Int
-countTotal (Sequence before _ after) =
-    List.length before + 1 + List.length after
+select : a -> Sequence a -> Sequence a
+select target ((Sequence { before, this, after }) as input) =
+    selectHelp target [] (before ++ [ this ] ++ after)
+        |> Maybe.withDefault input
 
 
-countSoFar : Sequence a -> Int
-countSoFar (Sequence before _ after) =
-    List.length before + 1
+selectHelp : a -> List a -> List a -> Maybe (Sequence a)
+selectHelp target visited remaining =
+    case remaining of
+        [] ->
+            Nothing
+
+        next :: rest ->
+            if next == target then
+                Just <|
+                    Sequence
+                        { before = List.reverse visited
+                        , this = next
+                        , after = rest
+                        }
+            else
+                selectHelp target (next :: visited) rest
+
+
+toList : (Bool -> a -> b) -> Sequence a -> List b
+toList f (Sequence { before, this, after }) =
+    List.map (f False) before
+        ++ [ f True this ]
+        ++ List.map (f False) after

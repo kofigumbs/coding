@@ -2,9 +2,19 @@
   "title": "Text, numbers, and functions",
   "items": [
     {
+      "title": "Introduction to web programming",
+      "content": "_TODO_",
+      "code": ""
+    },
+    {
       "title": "Getting something on the screen",
       "content": "First things first—let's get something on the screen! To do that we're going to need to use **HTML**. The first line here is an **import**, which tells the language where to find a certain function. You can read this line as \"let me use the function called `text` from the `Html` file.\"\n\nIn the next line, we use `text` to put something on the screen. Try using the _EDIT_ button to fill your name in the blank!",
-      "code": "import [focus|Html|] exposing ([focus|text|])\n\nmain = [focus|text|] \"Hello, ___!\"\n"
+      "code": "import [focus|Html|] exposing ([focus|text|])\n\nmain = [focus|text|] \"Hello, ___!\""
+    },
+    {
+      "title": "Text values",
+      "content": "_TODO_",
+      "code": "import Html exposing (text)\n\nmain = text [focus|\"Hello, ___!\"|]"
     }
   ]
 }

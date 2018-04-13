@@ -27,11 +27,7 @@ view =
             [ h1 [ class "title", noMargin ] [ text "A coding course" ]
             , h1 [ class "title", noMargin ] [ text "Designed for Excel users" ]
             , fakeParagraph
-            , div
-                []
-                [ startLink
-                , learnLink
-                ]
+            , div [ class "buttons" ] [ startLink, learnLink ]
             ]
         , object
             [ style
@@ -58,7 +54,7 @@ startLink =
 learnLink : Html msg
 learnLink =
     a
-        [ class "button"
+        [ class "button is-primary is-inverted"
         , Route.href Route.Pricing
         ]
         [ text "Learn more" ]
@@ -74,8 +70,7 @@ fakeParagraph =
         Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
         nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
         reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
-        qui officia deserunt mollit anim id est laborum.
+        pariatur.
         """ ]
 
 

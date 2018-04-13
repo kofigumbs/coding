@@ -26,8 +26,7 @@ type alias Item =
 
 
 type Msg
-    = Previous
-    | Next
+    = Select Item
 
 
 init : String -> Task Never Model
@@ -49,64 +48,52 @@ init code =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Previous ->
-            ( { model | items = Lesson.Sequence.previous model.items }, Cmd.none )
-
-        Next ->
-            ( { model | items = Lesson.Sequence.next model.items }, Cmd.none )
+        Select item ->
+            ( { model | items = Lesson.Sequence.select item model.items }, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
     div
-        [ style
-            [ ( "display", "flex" )
-            , ( "flex-direction", "column" )
-            , ( "height", "100vh" )
-            , ( "width", "100vw" )
-            ]
-        ]
+        [ class "section" ]
         [ div
-            [ style
-                [ ( "flex", "1" )
-                , ( "width", "100vw" )
-                , ( "max-width", "1080px" )
-                , ( "padding", "25px" )
-                , ( "margin", "0 auto" )
-                ]
-            ]
-            [ viewItem <| Lesson.Sequence.current model.items ]
-        , nav
-            [ style
-                [ ( "display", "flex" )
-                , ( "flex-direction", "row" )
-                , ( "align-items", "center" )
-                , ( "justify-content", "center" )
-                , ( "width", "100vw" )
-                , ( "height", "65px" )
-                ]
-
-            -- , Ui.border Ui.Top Ui.Light
-            ]
-            [ button [ class "button", onClick Previous ] [ text "Previous" ]
-            , viewProgress model.items
-            , button [ class "button is-primary", onClick Next ] [ text "Next" ]
+            [ class "columns" ]
+            [ div
+                [ class "column is-narrow" ]
+                [ div [ class "menu" ] [ viewMenu model.items ] ]
+            , viewItem [ class "column" ] <| Lesson.Sequence.current model.items
             ]
         ]
 
 
-viewItem : Item -> Html Msg
-viewItem item =
-    div
-        []
+viewMenu : Sequence Item -> Html Msg
+viewMenu items =
+    ul [ class "menu-list" ] <| Lesson.Sequence.toList viewMenuItem items
+
+
+viewMenuItem : Bool -> Item -> Html Msg
+viewMenuItem isCurrent item =
+    li
+        [ class "menu-item" ]
+        [ a
+            [ classList [ ( "is-active", isCurrent ) ]
+            , onClick (Select item)
+            ]
+            [ text item.title ]
+        ]
+
+
+viewItem : List (Attribute Msg) -> Item -> Html Msg
+viewItem layoutAttrs item =
+    div layoutAttrs
         [ h1 [ class "title" ] [ text item.title ]
         , div
             [ class "columns" ]
             [ div
-                [ class "column is-half" ]
+                [ class "column" ]
                 [ pre [] [ code [] <| List.map viewCode item.code.rendered ] ]
             , div
-                [ class "column is-half" ]
+                [ class "column" ]
                 [ div [ class "content" ] [ markdown item.content ] ]
             ]
         ]
@@ -120,20 +107,6 @@ viewCode rendered =
 
         Lesson.Code.Focus content ->
             strong [ class "has-text-info" ] [ text content ]
-
-
-viewProgress : Sequence a -> Html msg
-viewProgress items =
-    div
-        [ style
-            [ ( "margin", "0 10px" )
-            , ( "font-family", "monospace" )
-            ]
-        ]
-        [ sup [] [ text <| toString <| Lesson.Sequence.countSoFar items ]
-        , text <| String.fromChar <| Char.fromCode 0x2044
-        , sub [] [ text <| toString <| Lesson.Sequence.countTotal items ]
-        ]
 
 
 markdown : String -> Html msg
