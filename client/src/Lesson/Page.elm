@@ -57,11 +57,14 @@ view model =
     div
         [ class "section" ]
         [ div
-            [ class "columns" ]
+            [ class "container" ]
             [ div
-                [ class "column is-narrow" ]
-                [ div [ class "menu" ] [ viewMenu model.items ] ]
-            , viewItem [ class "column" ] <| Lesson.Sequence.current model.items
+                [ class "columns" ]
+                [ div
+                    [ class "column is-2" ]
+                    [ div [ class "menu" ] [ viewMenu model.items ] ]
+                , viewItem [ class "column" ] <| Lesson.Sequence.current model.items
+                ]
             ]
         ]
 
