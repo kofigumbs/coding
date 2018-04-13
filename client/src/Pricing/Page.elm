@@ -7,14 +7,21 @@ import Html.Attributes exposing (..)
 view : Html msg
 view =
     div
-        [ style
-            [ ( "display", "grid" )
-            , ( "grid-template-areas", "info info\na b" )
-            , ( "grid-template-rows", "1fr 1fr" )
-            , ( "grid-template-columns", "1fr 1fr" )
-            , ( "width", "100vw" )
-            , ( "height", "100vh" )
+        [ class "hero is-fullheight" ]
+        [ div
+            [ class "hero-body" ]
+            [ div
+                [ class "container has-text-centered" ]
+                [ h1 [ class "title" ] [ text "What's the plan" ]
+                , div
+                    [ class "columns" ]
+                    [ div
+                        [ class "column" ]
+                        [ div [ class "notification" ] [ text "Good" ] ]
+                    , div
+                        [ class "column" ]
+                        [ div [ class "notification is-primary" ] [ text "Great" ] ]
+                    ]
+                ]
             ]
-        ]
-        [ text "Hello, World!"
         ]

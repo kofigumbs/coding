@@ -8,53 +8,40 @@ import Route
 view : Html msg
 view =
     div
-        [ style
-            [ ( "width", "100vw" )
-            , ( "height", "100vh" )
-            , ( "max-width", "1080px" )
-            , ( "margin", "0 auto" )
-            , ( "display", "flex" )
-            , ( "flex-direction", "row" )
-            , ( "align-items", "center" )
-            ]
-        ]
+        [ class "hero is-fullheight" ]
         [ div
-            [ style
-                [ ( "flex", "1" )
-                , ( "padding", "25px" )
+            [ class "hero-body" ]
+            [ div
+                [ class "columns is-centered" ]
+                [ div
+                    [ class "column is-half" ]
+                    [ title
+                    , fakeParagraph
+                    , div [ class "buttons" ] [ startLink, learnLink ]
+                    ]
                 ]
             ]
-            [ h1 [ class "title", noMargin ] [ text "A coding course" ]
-            , h1 [ class "title", noMargin ] [ text "Designed for Excel users" ]
-            , fakeParagraph
-            , div [ class "buttons" ] [ startLink, learnLink ]
-            ]
-        , object
-            [ style
-                [ ( "flex", "1" )
-                , ( "width", "100%" )
-                , ( "height", "100%" )
-                , ( "max-height", "350px" )
-                ]
-            , attribute "data" "/hero-image.svg"
-            ]
-            []
         ]
+
+
+title : Html msg
+title =
+    h1 [ class "title" ] [ text "Know Excel? Learn coding 🎉" ]
 
 
 startLink : Html msg
 startLink =
     a
-        [ class "button is-primary"
+        [ class "button is-primary is-large"
         , Route.href <| Route.Lesson "0000"
         ]
-        [ text "Start lesson 1" ]
+        [ text "Start now" ]
 
 
 learnLink : Html msg
 learnLink =
     a
-        [ class "button is-primary is-inverted"
+        [ class "button is-primary is-large is-inverted"
         , Route.href Route.Pricing
         ]
         [ text "Learn more" ]
@@ -62,8 +49,8 @@ learnLink =
 
 fakeParagraph : Html msg
 fakeParagraph =
-    p
-        []
+    h4
+        [ class "subtitle" ]
         [ text """
         Lorem ipsum dolor sit amet, consectetur adipiscing elit,
         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -72,8 +59,3 @@ fakeParagraph =
         reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
         pariatur.
         """ ]
-
-
-noMargin : Attribute msg
-noMargin =
-    style [ ( "margin", "0" ) ]
