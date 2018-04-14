@@ -1,6 +1,5 @@
 module Lesson.Page exposing (Model, Msg, init, update, view)
 
-import Char
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -59,35 +58,42 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div
-        [ class "section" ]
-        [ div
-            [ class "container" ]
+        []
+        [ nav
+            [ class "navbar" ]
             [ div
-                [ class "columns" ]
+                [ class "navbar-menu is-active" ]
                 [ div
-                    [ class "column is-2" ]
-                    [ div [ class "menu" ] [ viewMenu model.items ] ]
-                , viewItem [ class "column" ] <| Lesson.Sequence.current model.items
+                    [ class "navbar-start" ]
+                    [ div
+                        [ class "navbar-item" ]
+                        [ div
+                            [ class "breadcrumb has-arrow-separator" ]
+                            [ ul [] <| Lesson.Sequence.toList viewMenuItem model.items ]
+                        ]
+                    ]
+                , div
+                    [ class "navbar-end has-background-primary" ]
+                    [ div
+                        [ class "navbar-item" ]
+                        [ button [ class "button is-primary" ] [ text "NEXT" ] ]
+                    ]
                 ]
             ]
+        , section
+            [ class "section" ]
+            [ div
+                [ class "container" ]
+                [ viewItem [] <| Lesson.Sequence.current model.items ]
+            ]
         ]
-
-
-viewMenu : Sequence Item -> Html Msg
-viewMenu items =
-    ul [ class "menu-list" ] <| Lesson.Sequence.toList viewMenuItem items
 
 
 viewMenuItem : Bool -> Item -> Html Msg
 viewMenuItem isCurrent item =
     li
-        [ class "menu-item" ]
-        [ a
-            [ classList [ ( "is-active", isCurrent ) ]
-            , onClick (Select item)
-            ]
-            [ text item.title ]
-        ]
+        [ classList [ ( "is-active", isCurrent ) ] ]
+        [ a [ onClick (Select item) ] [ text item.title ] ]
 
 
 viewItem : List (Attribute Msg) -> Item -> Html Msg
