@@ -21,12 +21,13 @@ type alias Model =
 type alias Item =
     { title : String
     , content : String
-    , code : Code
+    , code : Maybe Code
     }
 
 
 type Msg
     = Select Item
+    | Edit
 
 
 init : String -> Task Never Model
@@ -38,7 +39,7 @@ init code =
                     Json.Decode.map3 Item
                         (Json.Decode.field "title" Json.Decode.string)
                         (Json.Decode.field "content" Json.Decode.string)
-                        (Json.Decode.field "code" Lesson.Code.decoder)
+                        (Json.Decode.maybe <| Json.Decode.field "code" Lesson.Code.decoder)
             )
         )
         |> Http.toTask
@@ -50,6 +51,9 @@ update msg model =
     case msg of
         Select item ->
             ( { model | items = Lesson.Sequence.select item model.items }, Cmd.none )
+
+        Edit ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -92,9 +96,19 @@ viewItem layoutAttrs item =
         [ h1 [ class "title" ] [ text item.title ]
         , div
             [ class "columns" ]
-            [ div
-                [ class "column" ]
-                [ pre [] [ code [] <| List.map viewCode item.code.rendered ] ]
+            [ case item.code of
+                Nothing ->
+                    text ""
+
+                Just { rendered } ->
+                    div
+                        [ class "column" ]
+                        [ pre
+                            [ class "block" ]
+                            [ code [] <| List.map viewCode rendered ]
+                        , level
+                            [ button [ class "button", onClick Edit ] [ text "✏️  Edit" ] ]
+                        ]
             , div
                 [ class "column" ]
                 [ div [ class "content" ] [ markdown item.content ] ]
@@ -115,3 +129,8 @@ viewCode rendered =
 markdown : String -> Html msg
 markdown =
     Markdown.toHtml []
+
+
+level : List (Html msg) -> Html msg
+level =
+    div [ class "level" ] << List.map (\child -> div [ class "level-item" ] [ child ])
