@@ -1,4 +1,4 @@
-module Lesson.Sequence exposing (Sequence, current, decoder, next, previous, toList)
+module Lesson.Sequence exposing (Sequence, current, decoder, mapToList, next, previous)
 
 import Json.Decode
 
@@ -47,8 +47,8 @@ previous ((Sequence { before, this, after }) as input) =
             Sequence { before = rest, this = first, after = this :: after }
 
 
-toList : (Bool -> a -> b) -> Sequence a -> List b
-toList f (Sequence { before, this, after }) =
+mapToList : (Bool -> a -> b) -> Sequence a -> List b
+mapToList f (Sequence { before, this, after }) =
     List.map (f False) (List.reverse before)
         ++ [ f True this ]
         ++ List.map (f False) after

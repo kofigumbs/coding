@@ -13,9 +13,16 @@ import Task exposing (Task)
 
 type alias Model =
     { slug : String
+    , overlay : Maybe Overlay
+
+    -- REMOTE
     , lesson : String
     , items : Sequence Item
     }
+
+
+type Overlay
+    = Summary
 
 
 type alias Item =
@@ -29,12 +36,13 @@ type Msg
     = Edit
     | Next
     | Previous
+    | SetOverlay (Maybe Overlay)
 
 
 init : String -> Task Never Model
 init slug =
     Http.get ("/api/lessons/" ++ slug)
-        (Json.Decode.map2 (Model slug)
+        (Json.Decode.map2 (Model slug (Just Summary))
             (Json.Decode.field "title" Json.Decode.string)
             (Json.Decode.field "items" <|
                 Lesson.Sequence.decoder <|
@@ -60,6 +68,9 @@ update msg model =
         Previous ->
             ( { model | items = Lesson.Sequence.previous model.items }, Cmd.none )
 
+        SetOverlay overlay ->
+            ( { model | overlay = overlay }, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
@@ -71,12 +82,6 @@ view model =
                 [ class "navbar-brand" ]
                 [ div
                     [ class "navbar-item" ]
-                    [ h1 [ class "subtitle" ] [ text "Excelsior" ] ]
-                ]
-            , div
-                [ class "navbar-menu is-active" ]
-                [ div
-                    [ class "navbar-end" ]
                     [ viewContents model.lesson model.items ]
                 ]
             ]
@@ -86,19 +91,18 @@ view model =
                 [ class "container" ]
                 [ viewItem <| Lesson.Sequence.current model.items ]
             ]
+        , whenJust model.overlay <|
+            \_ -> viewSummary model.lesson model.items
         ]
 
 
 viewContents : String -> Sequence Item -> Html Msg
 viewContents lesson items =
-    div
-        [ class "navbar-item has-dropdown is-hoverable" ]
-        [ a [ class "navbar-link" ] []
-        , div [ class "navbar-dropdown is-right" ] <|
-            div [ class "navbar-item" ] [ strong [] [ text lesson ] ]
-                :: div [ class "navbar-divider" ] []
-                :: Lesson.Sequence.toList viewContentLesson items
+    a
+        [ class "navbar-link"
+        , onClick <| SetOverlay (Just Summary)
         ]
+        [ text "Table of contents" ]
 
 
 viewContentLesson : Bool -> Item -> Html Msg
@@ -119,11 +123,8 @@ viewItem item =
         [ h1 [ class "title" ] [ text item.title ]
         , div
             [ class "columns" ]
-            [ case item.code of
-                Nothing ->
-                    text ""
-
-                Just { rendered } ->
+            [ whenJust item.code <|
+                \{ rendered } ->
                     div
                         [ class "column" ]
                         [ pre
@@ -166,6 +167,38 @@ viewCode rendered =
             strong [ class "has-text-info" ] [ text content ]
 
 
+viewSummary : String -> Sequence Item -> Html Msg
+viewSummary lesson items =
+    div
+        [ class "modal is-active" ]
+        [ div [ class "modal-background" ] []
+        , div
+            [ class "modal-card" ]
+            [ div
+                [ class "modal-card-head" ]
+                [ p [] [ strong [] [ text lesson ] ] ]
+            , div
+                [ class "modal-card-body" ]
+                [ div
+                    [ class "content" ]
+                    [ ol [] <|
+                        Lesson.Sequence.mapToList
+                            (\_ { title } -> li [] [ text title ])
+                            items
+                    ]
+                ]
+            , div
+                [ class "modal-card-foot" ]
+                [ button
+                    [ class "button is-primary"
+                    , onClick <| SetOverlay Nothing
+                    ]
+                    [ text "✔ Let's go" ]
+                ]
+            ]
+        ]
+
+
 markdown : String -> Html msg
 markdown =
     Markdown.toHtml []
@@ -173,4 +206,15 @@ markdown =
 
 level : List (Html msg) -> Html msg
 level =
-    div [ class "level" ] << List.map (\child -> div [ class "level-item" ] [ child ])
+    div [ class "level" ]
+        << List.map (\child -> div [ class "level-item" ] [ child ])
+
+
+whenJust : Maybe a -> (a -> Html msg) -> Html msg
+whenJust maybe f =
+    case maybe of
+        Nothing ->
+            text ""
+
+        Just x ->
+            f x
