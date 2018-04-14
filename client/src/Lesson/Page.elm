@@ -4,7 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Json.Decode
+import Json.Decode as D
+import Json.Encode as E
 import Lesson.Code exposing (Code)
 import Lesson.Sequence exposing (Sequence)
 import Markdown
@@ -23,6 +24,8 @@ type alias Model =
 
 type Overlay
     = Summary
+    | RunnerLoading
+    | RunnerOutput String
 
 
 type alias Item =
@@ -44,21 +47,23 @@ type Msg
     | Next
     | Previous
     | SetOverlay (Maybe Overlay)
+    | Compile String
+    | CompileResponse (Result Http.Error String)
 
 
 init : String -> Task Never Model
 init slug =
     Http.get ("/api/lessons/" ++ slug)
-        (Json.Decode.map2 (Model slug (Just Summary))
-            (Json.Decode.field "title" Json.Decode.string)
-            (Json.Decode.field "items" <|
+        (D.map2 (Model slug (Just Summary))
+            (D.field "title" D.string)
+            (D.field "items" <|
                 Lesson.Sequence.decoder <|
-                    Json.Decode.map3 Item
-                        (Json.Decode.field "title" Json.Decode.string)
-                        (Json.Decode.field "content" Json.Decode.string)
-                        (Json.Decode.field "code" Lesson.Code.decoder
-                            |> Json.Decode.map (Editor False)
-                            |> Json.Decode.maybe
+                    D.map3 Item
+                        (D.field "title" D.string)
+                        (D.field "content" D.string)
+                        (D.field "code" Lesson.Code.decoder
+                            |> D.map (Editor False)
+                            |> D.maybe
                         )
             )
         )
@@ -84,6 +89,15 @@ update msg model =
         SetOverlay overlay ->
             pure { model | overlay = overlay }
 
+        Compile elm ->
+            ( { model | overlay = Just RunnerLoading }, compile elm )
+
+        CompileResponse ((Err _) as e) ->
+            Debug.crash <| toString e
+
+        CompileResponse (Ok html) ->
+            pure { model | overlay = Just (RunnerOutput html) }
+
 
 pure : Model -> ( Model, Cmd Msg )
 pure model =
@@ -96,6 +110,14 @@ setInteractive to item =
         | editor =
             Maybe.map (\editor -> { editor | interactive = to }) item.editor
     }
+
+
+compile : String -> Cmd Msg
+compile elm =
+    Http.send CompileResponse <|
+        Http.post "http://localhost:3001/compile"
+            (Http.jsonBody <| E.object [ ( "elm", E.string elm ) ])
+            (D.field "output" D.string)
 
 
 view : Model -> Html Msg
@@ -118,7 +140,16 @@ view model =
                 [ viewItem <| Lesson.Sequence.current model.items ]
             ]
         , whenJust model.overlay <|
-            \_ -> viewSummary model.lesson model.items
+            \overlay ->
+                case overlay of
+                    Summary ->
+                        viewSummary model.lesson model.items
+
+                    RunnerLoading ->
+                        viewRunnerLoading
+
+                    RunnerOutput html ->
+                        viewRunnerOutput html
         ]
 
 
@@ -185,7 +216,7 @@ viewEditor layoutAttrs editor =
                     [ class "button is-danger is-inverted", onClick Close ]
                     [ text "❌ Close" ]
                 , button
-                    [ class "button" ]
+                    [ class "button", onClick <| Compile editor.code.elm ]
                     [ text "🏃 Run" ]
                 ]
             ]
@@ -214,34 +245,43 @@ viewCode rendered =
 
 viewSummary : String -> Sequence Item -> Html Msg
 viewSummary lesson items =
-    div
-        [ class "modal is-active" ]
-        [ div [ class "modal-background" ] []
+    modalCard
+        [ div
+            [ class "modal-card-head" ]
+            [ p [] [ strong [] [ text lesson ] ] ]
         , div
-            [ class "modal-card" ]
+            [ class "modal-card-body" ]
             [ div
-                [ class "modal-card-head" ]
-                [ p [] [ strong [] [ text lesson ] ] ]
-            , div
-                [ class "modal-card-body" ]
-                [ div
-                    [ class "content" ]
-                    [ ol [] <|
-                        Lesson.Sequence.mapToList
-                            (\_ { title } -> li [] [ text title ])
-                            items
-                    ]
-                ]
-            , div
-                [ class "modal-card-foot" ]
-                [ button
-                    [ class "button is-primary"
-                    , onClick <| SetOverlay Nothing
-                    ]
-                    [ text "✔ Let's go" ]
+                [ class "content" ]
+                [ ol [] <|
+                    Lesson.Sequence.mapToList
+                        (\_ { title } -> li [] [ text title ])
+                        items
                 ]
             ]
+        , div
+            [ class "modal-card-foot" ]
+            [ button
+                [ class "button is-primary"
+                , onClick <| SetOverlay Nothing
+                ]
+                [ text "✔ Let's go" ]
+            ]
         ]
+
+
+viewRunnerLoading : Html Msg
+viewRunnerLoading =
+    modalCard
+        [ div
+            [ class "modal-card-body has-text-centered" ]
+            [ button [ class "button is-loading is-white" ] [] ]
+        ]
+
+
+viewRunnerOutput : String -> Html Msg
+viewRunnerOutput html =
+    modalCard [ div [ class "modal-card-body" ] [ iframe [ srcdoc html ] [] ] ]
 
 
 markdown : String -> Html msg
@@ -253,6 +293,15 @@ level : List (Html msg) -> Html msg
 level =
     div [ class "level" ]
         << List.map (\child -> div [ class "level-item" ] [ child ])
+
+
+modalCard : List (Html Msg) -> Html Msg
+modalCard children =
+    div
+        [ class "modal is-active" ]
+        [ div [ class "modal-background", onClick <| SetOverlay Nothing ] []
+        , div [ class "modal-card" ] children
+        ]
 
 
 whenJust : Maybe a -> (a -> Html msg) -> Html msg

@@ -1,8 +1,10 @@
 // JSON API
 
 const app = require("express")();
+var cors = require('cors')
 const bodyParser = require("body-parser");
 
+app.use(cors());
 app.use(bodyParser.json());
 
 
@@ -13,7 +15,7 @@ const fs = require("fs");
 const temp = require("temp");
 const elm = require("node-elm-compiler");
 
-const flags = { warn: true, yes: true, report: "json" };
+const flags = { warn: true, yes: true, report: "json", output: "elm.html" };
 
 app.post("/compile", (request, response) => {
   temp.open({ suffix: 'elm' }, (tempError, { fd, path }) => {
