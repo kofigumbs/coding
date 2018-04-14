@@ -1,4 +1,4 @@
-module Lesson.Sequence exposing (Sequence, current, decoder, mapToList, next, previous)
+module Lesson.Sequence exposing (Sequence, current, decoder, edit, mapToList, next, previous)
 
 import Json.Decode
 
@@ -25,6 +25,11 @@ decoder item =
 current : Sequence a -> a
 current (Sequence { this }) =
     this
+
+
+edit : (a -> a) -> Sequence a -> Sequence a
+edit f (Sequence input) =
+    Sequence { input | this = f input.this }
 
 
 next : Sequence a -> Sequence a

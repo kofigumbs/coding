@@ -28,12 +28,19 @@ type Overlay
 type alias Item =
     { title : String
     , content : String
-    , code : Maybe Code
+    , editor : Maybe Editor
+    }
+
+
+type alias Editor =
+    { interactive : Bool
+    , code : Code
     }
 
 
 type Msg
     = Edit
+    | Close
     | Next
     | Previous
     | SetOverlay (Maybe Overlay)
@@ -49,7 +56,10 @@ init slug =
                     Json.Decode.map3 Item
                         (Json.Decode.field "title" Json.Decode.string)
                         (Json.Decode.field "content" Json.Decode.string)
-                        (Json.Decode.maybe <| Json.Decode.field "code" Lesson.Code.decoder)
+                        (Json.Decode.field "code" Lesson.Code.decoder
+                            |> Json.Decode.map (Editor False)
+                            |> Json.Decode.maybe
+                        )
             )
         )
         |> Http.toTask
@@ -60,16 +70,32 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Edit ->
-            ( model, Cmd.none )
+            pure { model | items = Lesson.Sequence.edit (setInteractive True) model.items }
+
+        Close ->
+            pure { model | items = Lesson.Sequence.edit (setInteractive False) model.items }
 
         Next ->
-            ( { model | items = Lesson.Sequence.next model.items }, Cmd.none )
+            pure { model | items = Lesson.Sequence.next model.items }
 
         Previous ->
-            ( { model | items = Lesson.Sequence.previous model.items }, Cmd.none )
+            pure { model | items = Lesson.Sequence.previous model.items }
 
         SetOverlay overlay ->
-            ( { model | overlay = overlay }, Cmd.none )
+            pure { model | overlay = overlay }
+
+
+pure : Model -> ( Model, Cmd Msg )
+pure model =
+    ( model, Cmd.none )
+
+
+setInteractive : Bool -> Item -> Item
+setInteractive to item =
+    { item
+        | editor =
+            Maybe.map (\editor -> { editor | interactive = to }) item.editor
+    }
 
 
 view : Model -> Html Msg
@@ -123,19 +149,7 @@ viewItem item =
         [ h1 [ class "title" ] [ text item.title ]
         , div
             [ class "columns" ]
-            [ whenJust item.code <|
-                \{ rendered } ->
-                    div
-                        [ class "column" ]
-                        [ pre
-                            [ class "block" ]
-                            [ code [] <| List.map viewCode rendered ]
-                        , level
-                            [ button
-                                [ class "button", onClick Edit ]
-                                [ text "✏️  Edit" ]
-                            ]
-                        ]
+            [ whenJust item.editor <| viewEditor [ class "column" ]
             , div
                 [ class "column" ]
                 [ div [ class "content" ] [ markdown item.content ] ]
@@ -155,6 +169,37 @@ viewItem item =
                 ]
             ]
         ]
+
+
+viewEditor : List (Attribute Msg) -> Editor -> Html Msg
+viewEditor layoutAttrs editor =
+    if editor.interactive then
+        div layoutAttrs
+            [ textarea
+                [ class "textarea block"
+                , style [ ( "font-family", "monospace" ) ]
+                ]
+                [ text editor.code.elm ]
+            , level
+                [ button
+                    [ class "button is-danger is-inverted", onClick Close ]
+                    [ text "❌ Close" ]
+                , button
+                    [ class "button" ]
+                    [ text "🏃 Run" ]
+                ]
+            ]
+    else
+        div layoutAttrs
+            [ pre
+                [ class "block" ]
+                [ code [] <| List.map viewCode editor.code.rendered ]
+            , level
+                [ button
+                    [ class "button", onClick Edit ]
+                    [ text "✏️  Edit" ]
+                ]
+            ]
 
 
 viewCode : Lesson.Code.Render -> Html msg
