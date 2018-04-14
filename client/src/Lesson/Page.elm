@@ -26,6 +26,7 @@ type Overlay
     = Summary
     | RunnerLoading
     | RunnerOutput String
+    | RunnerError String
 
 
 type alias Item =
@@ -42,8 +43,9 @@ type alias Editor =
 
 
 type Msg
-    = Edit
-    | Close
+    = EditorOpen
+    | EditorClose
+    | EditorInput String
     | Next
     | Previous
     | SetOverlay (Maybe Overlay)
@@ -74,11 +76,14 @@ init slug =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Edit ->
+        EditorOpen ->
             pure { model | items = Lesson.Sequence.edit (setInteractive True) model.items }
 
-        Close ->
+        EditorClose ->
             pure { model | items = Lesson.Sequence.edit (setInteractive False) model.items }
+
+        EditorInput elm ->
+            pure { model | items = Lesson.Sequence.edit (setElm elm) model.items }
 
         Next ->
             pure { model | items = Lesson.Sequence.next model.items }
@@ -92,11 +97,11 @@ update msg model =
         Compile elm ->
             ( { model | overlay = Just RunnerLoading }, compile elm )
 
-        CompileResponse ((Err _) as e) ->
-            Debug.crash <| toString e
-
         CompileResponse (Ok html) ->
-            pure { model | overlay = Just (RunnerOutput html) }
+            pure { model | overlay = Just <| RunnerOutput html }
+
+        CompileResponse (Err e) ->
+            pure { model | overlay = Just <| RunnerError (toString e) }
 
 
 pure : Model -> ( Model, Cmd Msg )
@@ -106,10 +111,20 @@ pure model =
 
 setInteractive : Bool -> Item -> Item
 setInteractive to item =
-    { item
-        | editor =
-            Maybe.map (\editor -> { editor | interactive = to }) item.editor
-    }
+    let
+        transform editor =
+            { editor | interactive = to }
+    in
+    { item | editor = Maybe.map transform item.editor }
+
+
+setElm : String -> Item -> Item
+setElm to item =
+    let
+        transform ({ code } as editor) =
+            { editor | code = { code | elm = to } }
+    in
+    { item | editor = Maybe.map transform item.editor }
 
 
 compile : String -> Cmd Msg
@@ -150,6 +165,9 @@ view model =
 
                     RunnerOutput html ->
                         viewRunnerOutput html
+
+                    RunnerError reason ->
+                        viewRunnerError reason
         ]
 
 
@@ -209,11 +227,12 @@ viewEditor layoutAttrs editor =
             [ textarea
                 [ class "textarea block"
                 , style [ ( "font-family", "monospace" ) ]
+                , onInput EditorInput
                 ]
                 [ text editor.code.elm ]
             , level
                 [ button
-                    [ class "button is-danger is-inverted", onClick Close ]
+                    [ class "button is-danger is-inverted", onClick EditorClose ]
                     [ text "❌ Close" ]
                 , button
                     [ class "button", onClick <| Compile editor.code.elm ]
@@ -227,7 +246,7 @@ viewEditor layoutAttrs editor =
                 [ code [] <| List.map viewCode editor.code.rendered ]
             , level
                 [ button
-                    [ class "button", onClick Edit ]
+                    [ class "button", onClick EditorOpen ]
                     [ text "✏️  Edit" ]
                 ]
             ]
@@ -282,6 +301,17 @@ viewRunnerLoading =
 viewRunnerOutput : String -> Html Msg
 viewRunnerOutput html =
     modalCard [ div [ class "modal-card-body" ] [ iframe [ srcdoc html ] [] ] ]
+
+
+viewRunnerError : String -> Html Msg
+viewRunnerError reason =
+    modalCard
+        [ div
+            [ class "modal-card-body has-background-warning" ]
+            [ strong [] [ text "Oops, we messed up somewhere along the line..." ]
+            , input [ type_ "hidden", value reason ] []
+            ]
+        ]
 
 
 markdown : String -> Html msg
