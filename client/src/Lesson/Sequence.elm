@@ -1,4 +1,4 @@
-module Lesson.Sequence exposing (Sequence, current, decoder, select, toList)
+module Lesson.Sequence exposing (Sequence, current, decoder, next, previous, toList)
 
 import Json.Decode
 
@@ -27,32 +27,28 @@ current (Sequence { this }) =
     this
 
 
-select : a -> Sequence a -> Sequence a
-select target ((Sequence { before, this, after }) as input) =
-    selectHelp target [] (before ++ [ this ] ++ after)
-        |> Maybe.withDefault input
-
-
-selectHelp : a -> List a -> List a -> Maybe (Sequence a)
-selectHelp target visited remaining =
-    case remaining of
+next : Sequence a -> Sequence a
+next ((Sequence { before, this, after }) as input) =
+    case after of
         [] ->
-            Nothing
+            input
 
-        next :: rest ->
-            if next == target then
-                Just <|
-                    Sequence
-                        { before = List.reverse visited
-                        , this = next
-                        , after = rest
-                        }
-            else
-                selectHelp target (next :: visited) rest
+        first :: rest ->
+            Sequence { before = this :: before, this = first, after = rest }
+
+
+previous : Sequence a -> Sequence a
+previous ((Sequence { before, this, after }) as input) =
+    case before of
+        [] ->
+            input
+
+        first :: rest ->
+            Sequence { before = rest, this = first, after = this :: after }
 
 
 toList : (Bool -> a -> b) -> Sequence a -> List b
 toList f (Sequence { before, this, after }) =
-    List.map (f False) before
+    List.map (f False) (List.reverse before)
         ++ [ f True this ]
         ++ List.map (f False) after

@@ -12,7 +12,8 @@ import Task exposing (Task)
 
 
 type alias Model =
-    { code : String
+    { slug : String
+    , lesson : String
     , items : Sequence Item
     }
 
@@ -25,14 +26,16 @@ type alias Item =
 
 
 type Msg
-    = Select Item
-    | Edit
+    = Edit
+    | Next
+    | Previous
 
 
 init : String -> Task Never Model
-init code =
-    Http.get ("/api/lessons/" ++ code)
-        (Json.Decode.map (Model code)
+init slug =
+    Http.get ("/api/lessons/" ++ slug)
+        (Json.Decode.map2 (Model slug)
+            (Json.Decode.field "title" Json.Decode.string)
             (Json.Decode.field "items" <|
                 Lesson.Sequence.decoder <|
                     Json.Decode.map3 Item
@@ -48,11 +51,14 @@ init code =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Select item ->
-            ( { model | items = Lesson.Sequence.select item model.items }, Cmd.none )
-
         Edit ->
             ( model, Cmd.none )
+
+        Next ->
+            ( { model | items = Lesson.Sequence.next model.items }, Cmd.none )
+
+        Previous ->
+            ( { model | items = Lesson.Sequence.previous model.items }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -62,43 +68,54 @@ view model =
         [ nav
             [ class "navbar" ]
             [ div
+                [ class "navbar-brand" ]
+                [ div
+                    [ class "navbar-item" ]
+                    [ h1 [ class "subtitle" ] [ text "Excelsior" ] ]
+                ]
+            , div
                 [ class "navbar-menu is-active" ]
                 [ div
-                    [ class "navbar-start" ]
-                    [ div
-                        [ class "navbar-item" ]
-                        [ div
-                            [ class "breadcrumb has-arrow-separator" ]
-                            [ ul [] <| Lesson.Sequence.toList viewMenuItem model.items ]
-                        ]
-                    ]
-                , div
-                    [ class "navbar-end has-background-primary" ]
-                    [ div
-                        [ class "navbar-item" ]
-                        [ button [ class "button is-primary" ] [ text "NEXT" ] ]
-                    ]
+                    [ class "navbar-end" ]
+                    [ viewContents model.lesson model.items ]
                 ]
             ]
         , section
             [ class "section" ]
             [ div
                 [ class "container" ]
-                [ viewItem [] <| Lesson.Sequence.current model.items ]
+                [ viewItem <| Lesson.Sequence.current model.items ]
             ]
         ]
 
 
-viewMenuItem : Bool -> Item -> Html Msg
-viewMenuItem isCurrent item =
-    li
-        [ classList [ ( "is-active", isCurrent ) ] ]
-        [ a [ onClick (Select item) ] [ text item.title ] ]
+viewContents : String -> Sequence Item -> Html Msg
+viewContents lesson items =
+    div
+        [ class "navbar-item has-dropdown is-hoverable" ]
+        [ a [ class "navbar-link" ] []
+        , div [ class "navbar-dropdown is-right" ] <|
+            div [ class "navbar-item" ] [ strong [] [ text lesson ] ]
+                :: div [ class "navbar-divider" ] []
+                :: Lesson.Sequence.toList viewContentLesson items
+        ]
 
 
-viewItem : List (Attribute Msg) -> Item -> Html Msg
-viewItem layoutAttrs item =
-    div layoutAttrs
+viewContentLesson : Bool -> Item -> Html Msg
+viewContentLesson isCurrent { title } =
+    div
+        [ classList
+            [ ( "navbar-item", True )
+            , ( "has-text-info", isCurrent )
+            ]
+        ]
+        [ text title ]
+
+
+viewItem : Item -> Html Msg
+viewItem item =
+    div
+        []
         [ h1 [ class "title" ] [ text item.title ]
         , div
             [ class "columns" ]
@@ -113,11 +130,28 @@ viewItem layoutAttrs item =
                             [ class "block" ]
                             [ code [] <| List.map viewCode rendered ]
                         , level
-                            [ button [ class "button", onClick Edit ] [ text "✏️  Edit" ] ]
+                            [ button
+                                [ class "button", onClick Edit ]
+                                [ text "✏️  Edit" ]
+                            ]
                         ]
             , div
                 [ class "column" ]
                 [ div [ class "content" ] [ markdown item.content ] ]
+            ]
+        , level
+            [ div
+                [ class "buttons" ]
+                [ button
+                    [ class "button is-primary is-medium is-inverted"
+                    , title "Previous"
+                    , onClick Previous
+                    ]
+                    [ strong [] [ text "←" ] ]
+                , button
+                    [ class "button is-primary is-medium", onClick Next ]
+                    [ strong [] [ text "→ Next" ] ]
+                ]
             ]
         ]
 
