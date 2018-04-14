@@ -3,17 +3,12 @@
     "repository": "gist.github.com/hkgumbs",
     "license": "BSD3",
     "scripts": {
-        "dev": "nodemon index.js"
+        "server": "node index.js"
     },
     "dependencies": {
         "body-parser": "^1.18.2",
         "cors": "^2.8.4",
         "express": "^4.16.3",
-        "node-elm-compiler": "^4.5.0",
-        "npm": "^5.8.0",
-        "temp": "^0.8.3"
-    },
-    "devDependencies": {
-        "nodemon": "^1.17.2"
+        "npm": "^5.8.0"
     }
 }

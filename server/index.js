@@ -12,20 +12,26 @@ app.use(bodyParser.json());
 
 const assert = require("assert");
 const fs = require("fs");
-const temp = require("temp");
-const elm = require("node-elm-compiler");
+const proc = require("child_process");
 
 const flags = { warn: true, yes: true, report: "json", output: "elm.html" };
 
+const exec = (cmd, callback) => {
+  proc.exec(cmd, (err, output) => assert(!err) || callback(output.trim()));
+};
+
+const write = (path, data, callback) => {
+  fs.writeFile(path, data, err => assert(!err) || callback());
+};
+
 app.post("/compile", (request, response) => {
-  temp.open({ suffix: 'elm' }, (tempError, { fd, path }) => {
-    assert(!tempError);
-    fs.write(fd, request.body.elm, fsError => {
-      assert(!fsError);
-      elm.compileToString(path, flags).then(
-        output => response.send({ output }),
-        error => response.send({ error })
-      );
+  exec("mktemp", input => {
+    exec("mktemp", output => {
+      write(input, request.body.elm, () => {
+        const compile = `elm-make --yes --output=${output}.html ${input} > /dev/null`;
+        const collect = `cat ${output}.html`;
+        exec(`${compile} && ${collect}`, html => response.send({ output: html }));
+      });
     });
   });
 });
