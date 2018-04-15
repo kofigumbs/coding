@@ -6,8 +6,8 @@ content = File.dirname(__FILE__)
 destination = File.join File.dirname(content), "client", "public", "api", "lessons"
 FileUtils.mkdir_p destination
 
-Dir.glob File.join(content, "*", "_config.yaml") do |path|
-  slug = File.basename File.dirname(path)
+Dir.glob File.join(content, "_data", "*.yaml") do |path|
+  slug = File.basename(path, ".yaml")
   config = YAML.load_file(path)
   File.write File.join(destination, slug), JSON.generate(
     title: config["title"],
