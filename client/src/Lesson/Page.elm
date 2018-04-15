@@ -272,11 +272,7 @@ viewSummary lesson items =
             [ class "modal-card-body" ]
             [ div
                 [ class "content" ]
-                [ ol [] <|
-                    Lesson.Sequence.mapToList
-                        (\_ { title } -> li [] [ text title ])
-                        items
-                ]
+                [ ol [] <| Lesson.Sequence.mapToList viewSummaryItem items ]
             ]
         , div
             [ class "modal-card-foot" ]
@@ -287,6 +283,11 @@ viewSummary lesson items =
                 [ text "✔ Let's go" ]
             ]
         ]
+
+
+viewSummaryItem : Bool -> Item -> Html Msg
+viewSummaryItem isCurrent { title } =
+    li [ classList [ ( "has-text-info", isCurrent ) ] ] [ text title ]
 
 
 viewRunnerLoading : Html Msg
