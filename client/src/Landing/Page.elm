@@ -1,12 +1,27 @@
-module Landing.Page exposing (view)
+module Landing.Page exposing (Model, init, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Http
+import Markdown
 import Route
+import Task exposing (Task)
 
 
-view : Html msg
-view =
+type alias Model =
+    { content : String }
+
+
+init : Task Never Model
+init =
+    Http.getString "/api/info/landing"
+        |> Http.toTask
+        |> Task.map Model
+        |> Task.onError ({- TODO -} toString >> Debug.crash)
+
+
+view : Model -> Html msg
+view { content } =
     div
         [ class "hero is-fullheight" ]
         [ div
@@ -15,18 +30,12 @@ view =
                 [ class "columns is-centered" ]
                 [ div
                     [ class "column is-half" ]
-                    [ title
-                    , fakeParagraph
+                    [ div [ class "content" ] [ Markdown.toHtml [] content ]
                     , div [ class "buttons" ] [ startLink, learnLink ]
                     ]
                 ]
             ]
         ]
-
-
-title : Html msg
-title =
-    h1 [ class "title" ] [ text "Know Excel? Learn coding 🎉" ]
 
 
 startLink : Html msg
@@ -45,17 +54,3 @@ learnLink =
         , Route.href Route.Pricing
         ]
         [ text "Learn more" ]
-
-
-fakeParagraph : Html msg
-fakeParagraph =
-    h4
-        [ class "subtitle" ]
-        [ text """
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-        nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-        reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur.
-        """ ]

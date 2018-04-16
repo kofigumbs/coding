@@ -20,10 +20,8 @@ type alias Model =
 type Page
     = Blank
     | Transitioning { from : Page }
-      -- STATIC
-    | Landing
+    | Landing Landing.Page.Model
     | Pricing
-      -- INTERACTIVE
     | Lesson Lesson.Page.Model
 
 
@@ -111,7 +109,7 @@ goTo destination model =
                     Cmd.none
 
                 Just Route.Root ->
-                    static Landing
+                    Task.perform (Loaded << Landing) Landing.Page.init
 
                 Just Route.Pricing ->
                     static Pricing
@@ -146,8 +144,8 @@ viewPage page =
         Blank ->
             Html.text ""
 
-        Landing ->
-            Landing.Page.view
+        Landing model ->
+            Landing.Page.view model
 
         Pricing ->
             Pricing.Page.view

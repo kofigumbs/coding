@@ -201,7 +201,7 @@ viewItem item =
             [ whenJust item.editor <| viewEditor [ class "column" ]
             , div
                 [ class "column" ]
-                [ div [ class "content" ] [ markdown item.content ] ]
+                [ div [ class "content" ] [ Markdown.toHtml [] item.content ] ]
             ]
         , level
             [ div
@@ -313,11 +313,6 @@ viewRunnerError reason =
             , input [ type_ "hidden", value reason ] []
             ]
         ]
-
-
-markdown : String -> Html msg
-markdown =
-    Markdown.toHtml []
 
 
 level : List (Html msg) -> Html msg
