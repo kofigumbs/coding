@@ -152,7 +152,10 @@ view model =
             [ class "section" ]
             [ div
                 [ class "container" ]
-                [ viewItem <| Lesson.Sequence.current model.items ]
+                [ viewItem
+                    (Lesson.Sequence.atStart model.items)
+                    (Lesson.Sequence.current model.items)
+                ]
             ]
         , whenJust model.overlay <|
             \overlay ->
@@ -191,8 +194,8 @@ viewContentLesson isCurrent { title } =
         [ text title ]
 
 
-viewItem : Item -> Html Msg
-viewItem item =
+viewItem : Bool -> Item -> Html Msg
+viewItem atStart item =
     div
         []
         [ h1 [ class "title" ] [ text item.title ]
@@ -210,6 +213,7 @@ viewItem item =
                     [ class "button is-primary is-medium is-inverted"
                     , title "Previous"
                     , onClick Previous
+                    , disabled atStart
                     ]
                     [ strong [] [ text "←" ] ]
                 , button

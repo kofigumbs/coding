@@ -1,4 +1,4 @@
-module Lesson.Sequence exposing (Sequence, current, decoder, edit, mapToList, next, previous)
+module Lesson.Sequence exposing (Sequence, atStart, current, decoder, edit, mapToList, next, previous)
 
 import Json.Decode
 
@@ -20,6 +20,11 @@ decoder item =
                         Json.Decode.succeed <|
                             Sequence { before = [], this = first, after = rest }
             )
+
+
+atStart : Sequence a -> Bool
+atStart (Sequence { before }) =
+    List.isEmpty before
 
 
 current : Sequence a -> a
