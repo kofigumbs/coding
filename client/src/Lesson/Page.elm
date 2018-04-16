@@ -305,7 +305,11 @@ viewRunnerLoading =
 
 viewRunnerOutput : String -> Html Msg
 viewRunnerOutput html =
-    modalCard [ div [ class "modal-card-body" ] [ iframe [ srcdoc html ] [] ] ]
+    modalCard
+        [ div
+            [ class "modal-card-body" ]
+            [ iframe [ srcdoc html, sandbox "allow-scripts" ] [] ]
+        ]
 
 
 viewRunnerError : String -> Html Msg
