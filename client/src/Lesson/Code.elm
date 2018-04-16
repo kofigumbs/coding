@@ -4,7 +4,7 @@ import Json.Decode exposing (..)
 
 
 type alias Code =
-    { elm : String, rendered : List Render }
+    { raw : String, rendered : List Render }
 
 
 type Render

@@ -1,20 +1,22 @@
 module Landing.Page exposing (Model, init, view)
 
+import Content exposing (Content)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
+import Json.Decode as D
 import Markdown
 import Route
 import Task exposing (Task)
 
 
 type alias Model =
-    { content : String }
+    { content : Content }
 
 
 init : Task Never Model
 init =
-    Http.getString "/api/landing"
+    Http.get "/api/landing" (D.field "content" Content.decoder)
         |> Http.toTask
         |> Task.map Model
         |> Task.onError ({- TODO -} toString >> Debug.crash)
@@ -30,7 +32,7 @@ view { content } =
                 [ class "columns is-centered" ]
                 [ div
                     [ class "column is-half" ]
-                    [ div [ class "content" ] [ Markdown.toHtml [] content ]
+                    [ Content.view content
                     , div [ class "buttons" ] [ startLink, learnLink ]
                     ]
                 ]

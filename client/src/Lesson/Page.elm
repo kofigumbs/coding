@@ -1,5 +1,6 @@
 module Lesson.Page exposing (Model, Msg, init, update, view)
 
+import Content exposing (Content)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -8,7 +9,6 @@ import Json.Decode as D
 import Json.Encode as E
 import Lesson.Code exposing (Code)
 import Lesson.Sequence exposing (Sequence)
-import Markdown
 import Task exposing (Task)
 
 
@@ -31,7 +31,7 @@ type Overlay
 
 type alias Item =
     { title : String
-    , content : String
+    , content : Content
     , editor : Maybe Editor
     }
 
@@ -62,7 +62,7 @@ init slug =
                 Lesson.Sequence.decoder <|
                     D.map3 Item
                         (D.field "title" D.string)
-                        (D.field "content" D.string)
+                        (D.field "content" Content.decoder)
                         (D.field "code" Lesson.Code.decoder
                             |> D.map (Editor False)
                             |> D.maybe
@@ -82,8 +82,8 @@ update msg model =
         EditorClose ->
             pure { model | items = Lesson.Sequence.edit (setInteractive False) model.items }
 
-        EditorInput elm ->
-            pure { model | items = Lesson.Sequence.edit (setElm elm) model.items }
+        EditorInput code ->
+            pure { model | items = Lesson.Sequence.edit (setElm code) model.items }
 
         Next ->
             pure { model | items = Lesson.Sequence.next model.items }
@@ -94,8 +94,8 @@ update msg model =
         SetOverlay overlay ->
             pure { model | overlay = overlay }
 
-        Compile elm ->
-            ( { model | overlay = Just RunnerLoading }, compile elm )
+        Compile code ->
+            ( { model | overlay = Just RunnerLoading }, compile code )
 
         CompileResponse (Ok html) ->
             pure { model | overlay = Just <| RunnerOutput html }
@@ -122,16 +122,16 @@ setElm : String -> Item -> Item
 setElm to item =
     let
         transform ({ code } as editor) =
-            { editor | code = { code | elm = to } }
+            { editor | code = { code | raw = to } }
     in
     { item | editor = Maybe.map transform item.editor }
 
 
 compile : String -> Cmd Msg
-compile elm =
+compile code =
     Http.send CompileResponse <|
         Http.post "http://localhost:3001/compile"
-            (Http.jsonBody <| E.object [ ( "elm", E.string elm ) ])
+            (Http.jsonBody <| E.object [ ( "elm", E.string code ) ])
             (D.field "output" D.string)
 
 
@@ -180,7 +180,7 @@ viewContents lesson items =
         [ class "navbar-link"
         , onClick <| SetOverlay (Just Summary)
         ]
-        [ text "Table of contents" ]
+        [ text "Overview" ]
 
 
 viewContentLesson : Bool -> Item -> Html Msg
@@ -202,9 +202,7 @@ viewItem atStart item =
         , div
             [ class "columns" ]
             [ whenJust item.editor <| viewEditor [ class "column" ]
-            , div
-                [ class "column" ]
-                [ div [ class "content" ] [ Markdown.toHtml [] item.content ] ]
+            , div [ class "column" ] [ Content.view item.content ]
             ]
         , level
             [ div
@@ -230,16 +228,21 @@ viewEditor layoutAttrs editor =
         div layoutAttrs
             [ textarea
                 [ class "textarea block"
-                , style [ ( "font-family", "monospace" ) ]
+                , style
+                    [ ( "font-family", "monospace" )
+                    , ( "white-space", "pre" )
+                    , ( "overflow-wrap", "normal" )
+                    , ( "overflow-x", "scroll" )
+                    ]
                 , onInput EditorInput
                 ]
-                [ text editor.code.elm ]
+                [ text editor.code.raw ]
             , level
                 [ button
                     [ class "button is-danger is-inverted", onClick EditorClose ]
                     [ text "❌ Close" ]
                 , button
-                    [ class "button", onClick <| Compile editor.code.elm ]
+                    [ class "button", onClick <| Compile editor.code.raw ]
                     [ text "🏃 Run" ]
                 ]
             ]
