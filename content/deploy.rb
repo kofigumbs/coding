@@ -31,6 +31,6 @@ end
 info = File.join(api, "info")
 FileUtils.mkdir_p info
 
-Dir.glob(File.join(content, "_info", "*.md")) do |path|
+Dir.glob(File.join(content, "*.md")) do |path|
   FileUtils.cp path, File.join(info, File.basename(path, ".md"))
 end
