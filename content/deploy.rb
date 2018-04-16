@@ -2,20 +2,14 @@
 
 require "json"
 require "yaml"
-require "fileutils"
 
 def without_frontmatter(path)
   File.read(path).split("---")[2..-1].join.strip
 end
 
 content = File.dirname(__FILE__)
-api = File.join File.dirname(content), "client", "public", "api"
-
-
-# LESSONS
-
+api = File.join content, "_api"
 lessons = File.join api, "lessons"
-FileUtils.mkdir_p lessons
 
 YAML.load_file(File.join(content, "_data", "lessons.yaml")).each do |config|
   File.write File.join(lessons, config["location"]), JSON.generate(
@@ -29,15 +23,6 @@ YAML.load_file(File.join(content, "_data", "lessons.yaml")).each do |config|
   )
 end
 
-
-# INFO
-
-info = File.join(api, "info")
-FileUtils.mkdir_p info
-
 Dir.glob(File.join(content, "*.md")) do |path|
-  File.write(
-    File.join(info, File.basename(path, ".md")),
-    without_frontmatter(path)
-  )
+  File.write File.join(api, File.basename(path, ".md")), without_frontmatter(path)
 end

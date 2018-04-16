@@ -14,7 +14,7 @@ type alias Model =
 
 init : Task Never Model
 init =
-    Http.getString "/api/info/landing"
+    Http.getString "/api/landing"
         |> Http.toTask
         |> Task.map Model
         |> Task.onError ({- TODO -} toString >> Debug.crash)
