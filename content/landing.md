@@ -1,4 +1,5 @@
 ---
+title: Info - Landing
 ---
 
 # Know Excel? Learn coding 🎉
