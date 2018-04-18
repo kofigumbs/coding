@@ -24,9 +24,8 @@ type alias Model =
 
 type Overlay
     = Summary
-    | RunnerLoading
-    | RunnerOutput String
-    | RunnerError String
+    | Loading
+    | Runner Output
 
 
 type alias Item =
@@ -50,7 +49,13 @@ type Msg
     | Previous
     | SetOverlay (Maybe Overlay)
     | Compile String
-    | CompileResponse (Result Http.Error String)
+    | CompileResponse Output
+
+
+type Output
+    = Html String
+    | Error String
+    | Unknown
 
 
 init : String -> Task Never Model
@@ -95,13 +100,10 @@ update msg model =
             pure { model | overlay = overlay }
 
         Compile code ->
-            ( { model | overlay = Just RunnerLoading }, compile code )
+            ( { model | overlay = Just Loading }, compile code )
 
-        CompileResponse (Ok html) ->
-            pure { model | overlay = Just <| RunnerOutput html }
-
-        CompileResponse (Err e) ->
-            pure { model | overlay = Just <| RunnerError (toString e) }
+        CompileResponse output ->
+            pure { model | overlay = Just <| Runner output }
 
 
 pure : Model -> ( Model, Cmd Msg )
@@ -129,10 +131,17 @@ setElm to item =
 
 compile : String -> Cmd Msg
 compile code =
-    Http.send CompileResponse <|
-        Http.post "http://localhost:3001/compile"
+    Http.toTask
+        (Http.post "http://localhost:3001/compile"
             (Http.jsonBody <| E.object [ ( "elm", E.string code ) ])
-            (D.field "output" D.string)
+            (D.oneOf
+                [ D.map Html <| D.field "output" D.string
+                , D.map Error <| D.field "error" D.string
+                ]
+            )
+        )
+        |> Task.onError (\_ -> Task.succeed Unknown)
+        |> Task.perform CompileResponse
 
 
 view : Model -> Html Msg
@@ -163,14 +172,17 @@ view model =
                     Summary ->
                         viewSummary model.lesson model.items
 
-                    RunnerLoading ->
-                        viewRunnerLoading
+                    Loading ->
+                        viewLoading
 
-                    RunnerOutput html ->
-                        viewRunnerOutput html
+                    Runner (Html html) ->
+                        viewRunnerHtml html
 
-                    RunnerError reason ->
+                    Runner (Error reason) ->
                         viewRunnerError reason
+
+                    Runner Unknown ->
+                        viewRunnerUnknown
         ]
 
 
@@ -297,8 +309,8 @@ viewSummaryItem isCurrent { title } =
     li [ classList [ ( "has-text-info", isCurrent ) ] ] [ text title ]
 
 
-viewRunnerLoading : Html Msg
-viewRunnerLoading =
+viewLoading : Html Msg
+viewLoading =
     modalCard
         [ div
             [ class "modal-card-body has-text-centered" ]
@@ -306,8 +318,8 @@ viewRunnerLoading =
         ]
 
 
-viewRunnerOutput : String -> Html Msg
-viewRunnerOutput html =
+viewRunnerHtml : String -> Html Msg
+viewRunnerHtml html =
     modalCard
         [ div
             [ class "modal-card-body" ]
@@ -320,9 +332,16 @@ viewRunnerError reason =
     modalCard
         [ div
             [ class "modal-card-body has-background-warning" ]
-            [ strong [] [ text "Oops, we messed up somewhere along the line..." ]
-            , input [ type_ "hidden", value reason ] []
-            ]
+            [ pre [ class "has-background-warning" ] [ text reason ] ]
+        ]
+
+
+viewRunnerUnknown : Html Msg
+viewRunnerUnknown =
+    modalCard
+        [ div
+            [ class "modal-card-body has-background-warning" ]
+            [ strong [] [ text "Oops, we messed up somewhere along the line..." ] ]
         ]
 
 

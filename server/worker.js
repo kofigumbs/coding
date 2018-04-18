@@ -18,15 +18,15 @@ const util = require("util");
 const shell = x => util.promisify(proc.exec)(x).then(y => y.stdout.trim());
 
 app.post("/compile", async (request, response) => {
+  const input = await shell("mktemp");
+  const output = await shell("mktemp");
+  await util.promisify(fs.writeFile)(input, request.body.elm);
   try {
-    const input = await shell("mktemp");
-    const output = await shell("mktemp");
-    await util.promisify(fs.writeFile)(input, request.body.elm);
     await shell(`elm-make --yes --output=${output}.html ${input}`);
     const html = await util.promisify(fs.readFile)(`${output}.html`, "utf8");
     response.send({ output: html });
   } catch(e) {
-    response.send({ error: e.stderr });
+    response.send({ error: e.stderr.split(input).join("") });
   }
 });
 
