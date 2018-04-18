@@ -1,6 +1,7 @@
 module Landing.Page exposing (Model, init, view)
 
 import Content exposing (Content)
+import Excelsior
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
@@ -11,14 +12,16 @@ import Task exposing (Task)
 
 
 type alias Model =
-    { content : Content }
+    { context : Excelsior.Context
+    , content : Content
+    }
 
 
-init : Task Never Model
-init =
-    Http.get "/api/landing" (D.field "content" Content.decoder)
+init : Excelsior.Context -> Task Never Model
+init context =
+    Http.get (context.api.content ++ "/landing") (D.field "content" Content.decoder)
         |> Http.toTask
-        |> Task.map Model
+        |> Task.map (Model context)
         |> Task.onError ({- TODO -} toString >> Debug.crash)
 
 

@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Animation
 import Animation.Messenger
+import Excelsior
 import Html
 import Landing.Page
 import Lesson.Page
@@ -14,6 +15,7 @@ import Task
 type alias Model =
     { page : Page
     , style : Animation.Messenger.State Msg
+    , context : Excelsior.Context
     }
 
 
@@ -25,11 +27,12 @@ type Page
     | Lesson Lesson.Page.Model
 
 
-init : Navigation.Location -> ( Model, Cmd Msg )
-init location =
+init : Excelsior.Context -> Navigation.Location -> ( Model, Cmd Msg )
+init context location =
     goTo (Route.fromLocation location)
         { page = Blank
         , style = Animation.style properties.initial
+        , context = context
         }
 
 
@@ -109,13 +112,13 @@ goTo destination model =
                     Cmd.none
 
                 Just Route.Root ->
-                    Task.perform (Loaded << Landing) Landing.Page.init
+                    Task.perform (Loaded << Landing) (Landing.Page.init model.context)
 
                 Just Route.Pricing ->
                     static Pricing
 
                 Just (Route.Lesson code) ->
-                    Task.perform (Loaded << Lesson) (Lesson.Page.init code)
+                    Task.perform (Loaded << Lesson) (Lesson.Page.init model.context code)
     in
     if model.page == Blank then
         ( model, cmd )
@@ -162,9 +165,9 @@ subscriptions model =
     Animation.subscription Animate [ model.style ]
 
 
-main : Program Never Model Msg
+main : Program Excelsior.Context Model Msg
 main =
-    Navigation.program
+    Navigation.programWithFlags
         (Route.fromLocation >> SetRoute)
         { view = view
         , init = init

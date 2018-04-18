@@ -1,6 +1,7 @@
 module Lesson.Page exposing (Model, Msg, init, update, view)
 
 import Content exposing (Content)
+import Excelsior
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -13,7 +14,8 @@ import Task exposing (Task)
 
 
 type alias Model =
-    { slug : String
+    { context : Excelsior.Context
+    , slug : String
     , overlay : Maybe Overlay
 
     -- REMOTE
@@ -58,10 +60,10 @@ type Output
     | Unknown
 
 
-init : String -> Task Never Model
-init slug =
-    Http.get ("/api/lessons/" ++ slug)
-        (D.map2 (Model slug (Just Summary))
+init : Excelsior.Context -> String -> Task Never Model
+init context slug =
+    Http.get (context.api.content ++ "/lessons/" ++ slug)
+        (D.map2 (Model context slug (Just Summary))
             (D.field "title" D.string)
             (D.field "items" <|
                 Lesson.Sequence.decoder <|
@@ -100,7 +102,7 @@ update msg model =
             pure { model | overlay = overlay }
 
         Compile code ->
-            ( { model | overlay = Just Loading }, compile code )
+            ( { model | overlay = Just Loading }, compile model.context code )
 
         CompileResponse output ->
             pure { model | overlay = Just <| Runner output }
@@ -129,10 +131,10 @@ setRaw to item =
     { item | editor = Maybe.map transform item.editor }
 
 
-compile : String -> Cmd Msg
-compile code =
+compile : Excelsior.Context -> String -> Cmd Msg
+compile context code =
     Http.toTask
-        (Http.post "http://localhost:3001/compile"
+        (Http.post (context.api.runner ++ "/compile")
             (Http.jsonBody <| E.object [ ( "elm", E.string code ) ])
             (D.oneOf
                 [ D.map Html <| D.field "output" D.string
