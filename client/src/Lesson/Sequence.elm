@@ -8,9 +8,9 @@ type Sequence a
 
 
 decoder : Json.Decode.Decoder a -> Json.Decode.Decoder (Sequence a)
-decoder item =
-    Json.Decode.list item
-        |> Json.Decode.andThen
+decoder =
+    Json.Decode.list
+        >> Json.Decode.andThen
             (\list ->
                 case list of
                     [] ->

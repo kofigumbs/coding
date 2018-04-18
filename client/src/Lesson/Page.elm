@@ -249,8 +249,9 @@ viewEditor layoutAttrs editor =
                     , ( "overflow-x", "scroll" )
                     ]
                 , onInput EditorInput
+                , defaultValue editor.code.raw
                 ]
-                [ text editor.code.raw ]
+                []
             , level
                 [ button
                     [ class "button is-danger is-inverted", onClick EditorClose ]
