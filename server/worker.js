@@ -1,7 +1,7 @@
 // JSON API
 
 const app = require("express")();
-var cors = require('cors')
+const cors = require('cors')
 const bodyParser = require("body-parser");
 
 app.use(cors());
@@ -13,27 +13,21 @@ app.use(bodyParser.json());
 const assert = require("assert");
 const fs = require("fs");
 const proc = require("child_process");
+const util = require("util");
 
-const flags = { warn: true, yes: true, report: "json", output: "elm.html" };
+const shell = x => util.promisify(proc.exec)(x).then(y => y.stdout.trim());
 
-const exec = (cmd, callback) => {
-  proc.exec(cmd, (err, output) => assert(!err) || callback(output.trim()));
-};
-
-const write = (path, data, callback) => {
-  fs.writeFile(path, data, err => assert(!err) || callback());
-};
-
-app.post("/compile", (request, response) => {
-  exec("mktemp", input => {
-    exec("mktemp", output => {
-      write(input, request.body.elm, () => {
-        const compile = `elm-make --yes --output=${output}.html ${input} > /dev/null`;
-        const collect = `cat ${output}.html`;
-        exec(`${compile} && ${collect}`, html => response.send({ output: html }));
-      });
-    });
-  });
+app.post("/compile", async (request, response) => {
+  try {
+    const input = await shell("mktemp");
+    const output = await shell("mktemp");
+    await util.promisify(fs.writeFile)(input, request.body.elm);
+    await shell(`elm-make --yes --output=${output}.html ${input}`);
+    const html = await util.promisify(fs.readFile)(`${output}.html`, "utf8");
+    response.send({ output: html });
+  } catch(e) {
+    response.send({ error: e.stderr });
+  }
 });
 
 
