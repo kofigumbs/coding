@@ -88,7 +88,7 @@ update msg model =
             pure { model | items = Lesson.Sequence.edit (setInteractive False) model.items }
 
         EditorInput code ->
-            pure { model | items = Lesson.Sequence.edit (setElm code) model.items }
+            pure { model | items = Lesson.Sequence.edit (setRaw code) model.items }
 
         Next ->
             pure { model | items = Lesson.Sequence.next model.items }
@@ -120,8 +120,8 @@ setInteractive to item =
     { item | editor = Maybe.map transform item.editor }
 
 
-setElm : String -> Item -> Item
-setElm to item =
+setRaw : String -> Item -> Item
+setRaw to item =
     let
         transform ({ code } as editor) =
             { editor | code = { code | raw = to } }
@@ -166,7 +166,7 @@ view model =
                     (Lesson.Sequence.current model.items)
                 ]
             ]
-        , whenJust model.overlay <|
+        , when model.overlay <|
             \overlay ->
                 case overlay of
                     Summary ->
@@ -213,7 +213,7 @@ viewItem atStart item =
         [ h1 [ class "title" ] [ text item.title ]
         , div
             [ class "columns" ]
-            [ whenJust item.editor <| viewEditor [ class "column" ]
+            [ when item.editor <| viewEditor [ class "column" ]
             , div [ class "column" ] [ Content.view item.content ]
             ]
         , level
@@ -360,8 +360,8 @@ modalCard children =
         ]
 
 
-whenJust : Maybe a -> (a -> Html msg) -> Html msg
-whenJust maybe f =
+when : Maybe a -> (a -> Html msg) -> Html msg
+when maybe f =
     case maybe of
         Nothing ->
             text ""
