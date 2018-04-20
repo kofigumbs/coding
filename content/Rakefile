@@ -4,7 +4,7 @@ require "yaml"
 task :default do
   def content_data(path)
     YAML.load_file(path).tap do |data|
-      data["content"] = File.read(path).split("---")[2..-1].join.strip
+      data["content"] = File.read(path).split("---")[2..-1].join("---").strip
     end
   end
 

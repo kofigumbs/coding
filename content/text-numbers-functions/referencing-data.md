@@ -17,7 +17,17 @@ Well, in Elm, **variables** have the same properties. In this example, the varia
 
 `**main**` **is a special variable** that Elm looks for in order to show a page. That's why it's been in every example so far. `main` always has to have Html contents.
 
-> **⭐ Try**
+> ⭐ **Try**
 >
-> * Use arithmetic inside of a variable: change `42` to `21 \* 2`
-> * Use variables inside variables: make a new variable called `drinkingAge`, so that you can say `meaningOfLife = drinkingAge \* 2`
+> ###### Arithmetic inside of variables
+>
+> Change `42` to `21 * 2`
+>
+>
+> ###### Variables inside variables
+>
+> Make a new variable called `drinkingAge`, then change `meaningOfLife` to look like:
+>
+> ```
+> meaningOfLife = drinkingAge * 2
+> ```

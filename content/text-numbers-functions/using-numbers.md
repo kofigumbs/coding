@@ -16,4 +16,4 @@ Note how **parenthesis let us order functions**. In this example, we are using t
 1. `toString` which turns the number into a String
 2. `Html.text` which turns a String into Html (to show on the screen)
 
-> ⭐️**Try** changing the addition to multiplication, which uses the `\*` symbol.
+> ⭐️ **Try** changing the addition to multiplication, which uses the `*` symbol.
