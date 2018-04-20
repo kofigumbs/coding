@@ -11,7 +11,7 @@ Start by glancing over at the code snippet. It won't make sense right away—don
 
 The first line here is an **import**, which tells the Elm about a particular file. `import Html` is telling Elm to look for a file called Html. `Html` is going to show up in all of our examples because that's how **we tell Elm to "generate an Html file for us"**.
 
-Inside of the Html file, there is a **function** called `text`. That's why the next line says `Html.text`, which just means **"use the function** `**text**`**, located within** `**Html**`**"**.
+Inside of the Html file, there is a **function** called `text`. That's why the next line says `Html.text`, which just means **"use the function `text`, located within `Html`"**.
 
 A function in Elm is just like a function in algebra or Excel. Functions take some input and produce some output. `Html.text` is a function that takes anything in quotes and turns it into Html. **In order to show something on the screen, it needs to be turned into Html.**
 
