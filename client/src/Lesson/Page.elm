@@ -1,6 +1,7 @@
 module Lesson.Page exposing (Model, Msg, init, update, view)
 
 import Content exposing (Content)
+import Dom
 import Excelsior
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -44,7 +45,8 @@ type alias Editor =
 
 
 type Msg
-    = EditorOpen
+    = NoOp
+    | EditorOpen
     | EditorClose
     | EditorInput String
     | Next
@@ -83,8 +85,11 @@ init context slug =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NoOp ->
+            pure model
+
         EditorOpen ->
-            pure { model | items = Lesson.Sequence.edit (setInteractive True) model.items }
+            ( { model | items = Lesson.Sequence.edit (setInteractive True) model.items }, focusEditor )
 
         EditorClose ->
             pure { model | items = Lesson.Sequence.edit (setInteractive False) model.items }
@@ -144,6 +149,11 @@ compile context code =
         )
         |> Task.onError (\_ -> Task.succeed Unknown)
         |> Task.perform CompileResponse
+
+
+focusEditor : Cmd Msg
+focusEditor =
+    Dom.focus "lesson-editor" |> Task.attempt (\_ -> NoOp)
 
 
 view : Model -> Html Msg
@@ -241,12 +251,15 @@ viewEditor layoutAttrs editor =
     if editor.interactive then
         div layoutAttrs
             [ textarea
-                [ class "textarea block"
+                [ id "lesson-editor"
+                , class "textarea block has-text-white"
                 , style
                     [ ( "font-family", "monospace" )
+                    , ( "font-weight", "600" )
                     , ( "white-space", "pre" )
                     , ( "overflow-wrap", "normal" )
                     , ( "overflow-x", "scroll" )
+                    , ( "background-color", "#2c292d" )
                     ]
                 , onInput EditorInput
                 , defaultValue editor.code.raw
