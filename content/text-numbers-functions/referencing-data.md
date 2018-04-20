@@ -1,13 +1,11 @@
 ---
-
 title: Referencing data
-code: |
-  import Html exposing (text)
+code: |-
+  import Html
 
   [focus|meaningOfLife|] = 21 * 2
 
-  [focus|main|] = text (toString meaningOfLife)
-
+  [focus|main|] = Html.text (toString meaningOfLife)
 ---
 
 Variables hold information, just **like a spreadsheet cell**. In Excel, you'd say something like `A2`. Well, in Elm, you can name variables whatever you want (almost)!
