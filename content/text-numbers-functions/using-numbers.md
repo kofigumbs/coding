@@ -1,11 +1,9 @@
 ---
-
 title: Using numbers
-code: |
-  import Html exposing (text)
+code: |-
+  import Html
 
-  main = text [focus|(toString (1 - 2 + 3))|]
-
+  main = Html.text [focus|(toString (1 - 2 + 3))|]
 ---
 
 Numbers work as you might expect them to: you can add, subtract, multiply, and divide, just the same as you would in Excel.
