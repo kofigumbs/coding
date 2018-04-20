@@ -3,18 +3,21 @@ title: Referencing data
 code: |-
   import Html
 
-  [focus|meaningOfLife|] = 21 * 2
+  [focus|meaningOfLife|] = 42
 
   [focus|main|] = Html.text (toString meaningOfLife)
 ---
+Think briefly about **spreadsheet cells** in Excel: what are their properties? Here are some that we came up with:
 
-Variables hold information, just **like a spreadsheet cell**. In Excel, you'd say something like `A2`. Well, in Elm, you can name variables whatever you want (almost)!
+* Cells **are static**
+* Cells **have contents**
+* Cells **can be referenced in other cells**
 
-We say that "**values**, like Strings or numbers, **are assigned to variables**." In this example "the number `42` is assigned to the variable `meaningOfLife`".
+Well, in Elm, **variables** have the same properties. In this example, the variable `meaningOfLife` has the content `42`. This means anywhere you can use `42`, you can now use `meaningOfLife` instead! Variables help us **give names to ideas** in our program.
 
-**`main` is a special variable** that Elm looks for in order to show a page. That's why it's been in every example so far. Since `meaningOfLife` is a number behind-the-scenes, we still need to use `toString`.
+`**main**` **is a special variable** that Elm looks for in order to show a page. That's why it's been in every example so far. `main` always has to have Html contents.
 
 > **⭐ Try**
-> - Create a new variable called `two`
-> - Assign it the number `2`
-> - Use it inside of `meaningOfLife`
+>
+> * Use arithmetic inside of a variable: change `42` to `21 \* 2`
+> * Use variables inside variables: make a new variable called `drinkingAge`, so that you can say `meaningOfLife = drinkingAge \* 2`
