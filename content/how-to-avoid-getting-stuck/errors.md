@@ -14,8 +14,10 @@ Values are so common in Elm, that it's easier to define them by example:
  - `"Hello"` is a **String value**
  - `toString` is a **function value**
 
-### Every value has a type
 
+### Types
+
+Every value has a type.
 Let's take another look at the example values listed above.
 This time, we're going to use a simpler format:
 
