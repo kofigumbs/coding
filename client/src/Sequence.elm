@@ -1,4 +1,4 @@
-module Lesson.Sequence exposing (Location(..), Sequence, current, decoder, edit, mapToList, next, previous)
+module Sequence exposing (Location(..), Sequence, current, decoder, edit, mapToList, next, previous)
 
 import Json.Decode
 

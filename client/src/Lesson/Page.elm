@@ -11,8 +11,9 @@ import Json.Decode as D
 import Json.Encode as E
 import Lesson.Code exposing (Code)
 import Lesson.Editor
-import Lesson.Sequence exposing (Sequence)
+import Pagination
 import Route
+import Sequence exposing (Sequence)
 import Task exposing (Task)
 
 
@@ -70,7 +71,7 @@ init context slug =
         (D.map2 (Model context slug (Just Summary))
             (D.field "title" D.string)
             (D.field "items" <|
-                Lesson.Sequence.decoder <|
+                Sequence.decoder <|
                     D.map3 Item
                         (D.field "title" D.string)
                         (D.field "content" Content.decoder)
@@ -91,19 +92,19 @@ update msg model =
             pure model
 
         EditorOpen ->
-            ( { model | items = Lesson.Sequence.edit (setInteractive True) model.items }, focusEditor )
+            ( { model | items = Sequence.edit (setInteractive True) model.items }, focusEditor )
 
         EditorClose ->
-            pure { model | items = Lesson.Sequence.edit (setInteractive False) model.items }
+            pure { model | items = Sequence.edit (setInteractive False) model.items }
 
         EditorInput code ->
-            pure { model | items = Lesson.Sequence.edit (setRaw code) model.items }
+            pure { model | items = Sequence.edit (setRaw code) model.items }
 
         Next ->
-            pure { model | items = Lesson.Sequence.next model.items }
+            pure { model | items = Sequence.next model.items }
 
         Previous ->
-            pure { model | items = Lesson.Sequence.previous model.items }
+            pure { model | items = Sequence.previous model.items }
 
         SetOverlay overlay ->
             pure { model | overlay = overlay }
@@ -175,7 +176,7 @@ view model =
             [ class "section" ]
             [ div
                 [ class "container" ]
-                [ viewItem <| Lesson.Sequence.current model.items ]
+                [ viewItem <| Sequence.current model.items ]
             ]
         , when model.overlay <|
             \overlay ->
@@ -217,7 +218,7 @@ viewContentLesson isCurrent { title } =
         [ text title ]
 
 
-viewItem : ( Lesson.Sequence.Location, Item ) -> Html Msg
+viewItem : ( Sequence.Location, Item ) -> Html Msg
 viewItem ( location, item ) =
     div
         []
@@ -227,28 +228,12 @@ viewItem ( location, item ) =
             [ when item.editor <| viewEditor [ class "column" ]
             , div [ class "column" ] [ Content.view item.content ]
             ]
-        , level
-            [ div
-                [ class "buttons" ]
-                [ button
-                    [ class "button is-primary is-medium is-inverted"
-                    , title "Previous"
-                    , onClick Previous
-                    , disabled <| location == Lesson.Sequence.Start
-                    ]
-                    [ strong [] [ text "←" ] ]
-                , if location == Lesson.Sequence.End then
-                    a
-                        [ class "button is-primary is-medium"
-                        , Route.href Route.Dashboard
-                        ]
-                        [ strong [] [ text "✔ Finish" ] ]
-                  else
-                    button
-                        [ class "button is-primary is-medium", onClick Next ]
-                        [ strong [] [ text "→ Next" ] ]
-                ]
-            ]
+        , Pagination.view
+            { previous = onClick Previous
+            , next = onClick Next
+            , finish = Route.href Route.Dashboard
+            }
+            location
         ]
 
 
@@ -299,7 +284,7 @@ viewSummary lesson items =
             [ class "modal-card-body" ]
             [ div
                 [ class "content" ]
-                [ ol [] <| Lesson.Sequence.mapToList viewSummaryItem items ]
+                [ ol [] <| Sequence.mapToList viewSummaryItem items ]
             ]
         , div
             [ class "modal-card-foot" ]
