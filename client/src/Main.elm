@@ -8,6 +8,7 @@ import Landing.Page
 import Lesson.Page
 import Navigation
 import Pricing.Page
+import Quiz.Page
 import Route
 import Task
 
@@ -25,6 +26,7 @@ type Page
     | Landing Landing.Page.Model
     | Pricing
     | Lesson Lesson.Page.Model
+    | Quiz Quiz.Page.Model
 
 
 init : Excelsior.Context -> Navigation.Location -> ( Model, Cmd Msg )
@@ -73,6 +75,7 @@ type Msg
     | Transitioned Page
     | Animate Animation.Msg
     | LessonMsg Lesson.Page.Msg
+    | QuizMsg Quiz.Page.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -99,6 +102,11 @@ update msg model =
                 |> Tuple.mapFirst (\new -> { model | page = Lesson new })
                 |> Tuple.mapSecond (Cmd.map LessonMsg)
 
+        ( QuizMsg pageMsg, Quiz pageModel ) ->
+            Quiz.Page.update pageMsg pageModel
+                |> Tuple.mapFirst (\new -> { model | page = Quiz new })
+                |> Tuple.mapSecond (Cmd.map QuizMsg)
+
         ( _, _ ) ->
             ( model, Cmd.none )
 
@@ -117,8 +125,11 @@ goTo destination model =
                 Just Route.Pricing ->
                     static Pricing
 
-                Just (Route.Lesson code) ->
-                    Task.perform (Loaded << Lesson) (Lesson.Page.init model.context code)
+                Just (Route.Lesson slug) ->
+                    Task.perform (Loaded << Lesson) (Lesson.Page.init model.context slug)
+
+                Just (Route.Quiz slug) ->
+                    Task.perform (Loaded << Quiz) (Quiz.Page.init model.context slug)
     in
     if model.page == Blank then
         ( model, cmd )
@@ -155,6 +166,9 @@ viewPage page =
 
         Lesson model ->
             Html.map LessonMsg <| Lesson.Page.view model
+
+        Quiz model ->
+            Html.map QuizMsg <| Quiz.Page.view model
 
         Transitioning { from } ->
             viewPage from

@@ -10,6 +10,7 @@ type Route
     = Root
     | Pricing
     | Lesson String
+    | Quiz String
 
 
 fromLocation : Location -> Maybe Route
@@ -26,6 +27,7 @@ parser =
         [ map Root top
         , map Pricing <| s "pricing"
         , map Lesson <| s "lesson" </> string
+        , map Quiz <| s "quiz" </> string
         ]
 
 
@@ -50,3 +52,6 @@ hash route =
 
         Lesson code ->
             "#/lesson/" ++ code
+
+        Quiz code ->
+            "#/quiz/" ++ code
