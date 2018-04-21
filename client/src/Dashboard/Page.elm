@@ -3,6 +3,7 @@ module Dashboard.Page exposing (Model, Msg, init, update, view)
 import Excelsior
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Http
 import Json.Decode as D
 import Route
@@ -21,7 +22,7 @@ type alias Lesson =
 
 
 type Msg
-    = NoOp
+    = Review String
 
 
 init : Excelsior.Context -> Task Never Model
@@ -41,25 +42,45 @@ init context =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
+        Review slug ->
             ( model, Cmd.none )
 
 
-view : Model -> Html msg
+view : Model -> Html Msg
 view model =
     div
-        [ class "section" ]
+        []
         [ div
-            [ class "container" ]
-            [ menu
-                [ class "menu" ]
-                [ p [ class "menu-label" ] [ text "Lessons" ]
-                , ul [ class "menu-list" ] <| List.map viewLesson model.lessons
+            [ class "hero is-primary" ]
+            [ div
+                [ class "hero-body" ]
+                [ div
+                    [ class "container" ]
+                    [ h1 [ class "title" ] [ text "🏠 Welcome home!" ] ]
                 ]
+            ]
+        , div
+            [ class "section" ]
+            [ div [ class "container" ] <|
+                h2 [ class "subtitle" ] [ text "Lessons" ]
+                    :: List.intersperse (hr [] [])
+                        (List.map viewLesson model.lessons)
             ]
         ]
 
 
-viewLesson : Lesson -> Html msg
+viewLesson : Lesson -> Html Msg
 viewLesson { title, slug } =
-    li [] [ a [ Route.href <| Route.Lesson slug ] [ text title ] ]
+    div
+        []
+        [ a
+            [ class "button is-inverted is-info"
+            , Route.href <| Route.Lesson slug
+            ]
+            [ text title ]
+        , a
+            [ class "button is-inverted is-primary"
+            , Route.href <| Route.Quiz slug
+            ]
+            [ strong [] [ text "Review" ] ]
+        ]

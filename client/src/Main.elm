@@ -76,6 +76,7 @@ type Msg
     | Loaded Page
     | Transitioned Page
     | Animate Animation.Msg
+    | DashboardMsg Dashboard.Page.Msg
     | LessonMsg Lesson.Page.Msg
     | QuizMsg Quiz.Page.Msg
 
@@ -98,6 +99,11 @@ update msg model =
         ( Animate animMsg, _ ) ->
             Animation.Messenger.update animMsg model.style
                 |> Tuple.mapFirst (\style -> { model | style = style })
+
+        ( DashboardMsg pageMsg, Dashboard pageModel ) ->
+            Dashboard.Page.update pageMsg pageModel
+                |> Tuple.mapFirst (\new -> { model | page = Dashboard new })
+                |> Tuple.mapSecond (Cmd.map DashboardMsg)
 
         ( LessonMsg pageMsg, Lesson pageModel ) ->
             Lesson.Page.update pageMsg pageModel
@@ -167,7 +173,7 @@ viewPage page =
             Landing.Page.view model
 
         Dashboard model ->
-            Dashboard.Page.view model
+            Html.map DashboardMsg <| Dashboard.Page.view model
 
         Pricing ->
             Pricing.Page.view
