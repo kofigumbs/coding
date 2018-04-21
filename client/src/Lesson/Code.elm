@@ -21,7 +21,9 @@ toCode : ( String, List Render ) -> String -> Code
 toCode ( raw, rendered ) input =
     case findBracketed { left = "[focus|", right = "|]" } input of
         Nothing ->
-            Code (raw ++ input) <| List.reverse (Raw input :: rendered)
+            { raw = String.trim (raw ++ input)
+            , rendered = List.reverse (Raw input :: rendered)
+            }
 
         Just found ->
             toCode

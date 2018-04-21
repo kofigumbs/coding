@@ -6,7 +6,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Json.Decode as D
-import Markdown
 import Route
 import Task exposing (Task)
 

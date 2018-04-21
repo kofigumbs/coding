@@ -261,6 +261,7 @@ viewEditor layoutAttrs editor =
                     , ( "overflow-x", "scroll" )
                     , ( "background-color", "#2c292d" )
                     ]
+                , rows <| List.length <| String.lines editor.code.raw
                 , onInput EditorInput
                 , defaultValue editor.code.raw
                 ]
@@ -347,8 +348,8 @@ viewRunnerError : String -> Html Msg
 viewRunnerError reason =
     modalCard
         [ div
-            [ class "modal-card-body has-background-warning" ]
-            [ pre [ class "has-background-warning" ] [ text reason ] ]
+            [ class "modal-card-body has-background-info" ]
+            [ pre [ class "has-background-info has-text-white" ] [ text reason ] ]
         ]
 
 

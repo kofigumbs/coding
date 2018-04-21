@@ -7,3 +7,11 @@
   - using-numbers
   - referencing-data
   - review
+
+- title: How to avoid getting stuck
+  location: how-to-avoid-getting-stuck
+  items:
+  - errors
+  - dealing-with-typos
+  - things-dont-match
+  # review

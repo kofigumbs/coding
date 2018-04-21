@@ -109,7 +109,7 @@ goTo destination model =
         cmd =
             case destination of
                 Nothing ->
-                    Cmd.none
+                    Route.modifyUrl Route.Root
 
                 Just Route.Root ->
                     Task.perform (Loaded << Landing) (Landing.Page.init model.context)
