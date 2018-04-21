@@ -10,6 +10,7 @@ import Http
 import Json.Decode as D
 import Json.Encode as E
 import Lesson.Code exposing (Code)
+import Lesson.Editor
 import Lesson.Sequence exposing (Sequence)
 import Task exposing (Task)
 
@@ -153,7 +154,7 @@ compile context code =
 
 focusEditor : Cmd Msg
 focusEditor =
-    Dom.focus "lesson-editor" |> Task.attempt (\_ -> NoOp)
+    Dom.focus Lesson.Editor.id |> Task.attempt (\_ -> NoOp)
 
 
 view : Model -> Html Msg
@@ -250,22 +251,7 @@ viewEditor : List (Attribute Msg) -> Editor -> Html Msg
 viewEditor layoutAttrs editor =
     if editor.interactive then
         div layoutAttrs
-            [ textarea
-                [ id "lesson-editor"
-                , class "textarea block has-text-white"
-                , style
-                    [ ( "font-family", "monospace" )
-                    , ( "font-weight", "600" )
-                    , ( "white-space", "pre" )
-                    , ( "overflow-wrap", "normal" )
-                    , ( "overflow-x", "scroll" )
-                    , ( "background-color", "#2c292d" )
-                    ]
-                , rows <| List.length <| String.lines editor.code.raw
-                , onInput EditorInput
-                , defaultValue editor.code.raw
-                ]
-                []
+            [ Lesson.Editor.view EditorInput editor.code.raw
             , level
                 [ button
                     [ class "button is-danger is-inverted", onClick EditorClose ]
