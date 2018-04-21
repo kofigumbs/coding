@@ -1,29 +1,45 @@
 require "json"
 require "yaml"
 
-task :default do
-  def content_data(path)
-    YAML.load_file(path).tap do |data|
-      data["content"] = File.read(path).split("---")[2..-1].join("---").strip
-    end
+CONTENT = File.dirname __FILE__
+BUILD = File.join CONTENT, "_build"
+
+def content_data(path)
+  YAML.load_file(path).tap do |data|
+    data["content"] = File.read(path).split("---")[2..-1].join("---").strip
   end
+end
 
-  content = File.dirname __FILE__
-  build = File.join content, "_build"
-  lessons = File.join build, "lessons"
+task default: [:dashboard, :lessons, :info]
 
-  YAML.load_file(File.join(content, "_data", "lessons.yaml")).each do |config|
+task :dashboard do
+  YAML.load_file(File.join(CONTENT, "_data", "lessons.yaml")).tap do |yaml|
+    output = File.join BUILD, "dashboard"
+    data = {
+      lessons: yaml.map do |lesson|
+        lesson.select { |key, _| key =~ /title|location/ }
+      end
+    }
+    File.write output, data.to_json
+  end
+end
+
+task :lessons do
+  YAML.load_file(File.join(CONTENT, "_data", "lessons.yaml")).each do |config|
+    output = File.join BUILD, "lessons"
     data = {
       title: config["title"],
       items: config["items"].map do |item|
-        content_data File.join content, config["location"], "#{item}.md"
+        content_data File.join CONTENT, config["location"], "#{item}.md"
       end
     }
-    File.write File.join(lessons, config["location"]), data.to_json
+    File.write File.join(output, config["location"]), data.to_json
   end
+end
 
-  Dir.glob(File.join(content, "*.md")) do |path|
-    destination = File.join build, File.basename(path, ".md")
+task :info do
+  Dir.glob(File.join(CONTENT, "*.md")) do |path|
+    destination = File.join BUILD, File.basename(path, ".md")
     File.write destination, content_data(path).to_json
   end
 end
