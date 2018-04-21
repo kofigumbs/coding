@@ -7,7 +7,7 @@ Professionals have valuable experience, gained by arduous effort. _Excel To Code
 
 ### Our Story
 
-We began talking about coding while Kofi worked at a software development company called _8th Light_ and Isaac worked at a professional services firm called _Ernst and Young (EY)_. In our respective fields, we had gained much experience. Kofi knew as many programming languages as Ziad Fazah knew spoken. Isaac, as many Excel functions as 
+We began talking about coding while Kofi worked at a software development company called _8th Light_ and Isaac worked at a professional services firm called _Ernst and Young (EY)_. In our respective fields, we had gained much experience. Kofi knew as many programming languages as Ziad Fazah knew spoken, and Isaac knew Excel functions as 
 
 we believe that you can learn how to code. The concepts utilized in Excel are very similar. We believe coding should therefore be intimidating. creating a connection point: Excel.
 
