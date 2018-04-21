@@ -13,7 +13,7 @@ Isaac eventually shared about his (admittedly odd) hobby: building spreadsheets 
 
 ### Your Learning
 
-Given your former knowledge in Excel, we believe you can learn to code. The concepts utilized in Excel are very similar to those utilized in coding. By emphasizing these points of commonality, blah blah blah not intimidating. 
+Given your former knowledge in Excel, we believe you can learn to code. The concepts utilized in Excel are very similar to those utilized in coding. By emphasizing these points of commonality, UPDATE blah blah blah not intimidating. 
 
 UPDATE... We created a course based on our respective background First, the coding basics, then elm. Why Elm? Kofi, a software engineer professional, it is the most effective language to learn. It is structured, it is.
 
