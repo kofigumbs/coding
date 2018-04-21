@@ -8,6 +8,7 @@ import UrlParser exposing (..)
 
 type Route
     = Root
+    | Dashboard
     | Pricing
     | Lesson String
     | Quiz String
@@ -25,6 +26,7 @@ parser : Parser (Route -> a) a
 parser =
     oneOf
         [ map Root top
+        , map Dashboard <| s "dashboard"
         , map Pricing <| s "pricing"
         , map Lesson <| s "lesson" </> string
         , map Quiz <| s "quiz" </> string
@@ -46,6 +48,9 @@ hash route =
     case route of
         Root ->
             "#/"
+
+        Dashboard ->
+            "#/dashboard"
 
         Pricing ->
             "#/pricing"
