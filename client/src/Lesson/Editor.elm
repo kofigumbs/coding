@@ -20,7 +20,6 @@ view toMsg content =
             , ( "font-weight", "600" )
             , ( "white-space", "pre" )
             , ( "overflow-wrap", "normal" )
-            , ( "overflow-x", "scroll" )
             , ( "background-color", "#2c292d" )
             , ( "border-radius", "2px" )
             ]

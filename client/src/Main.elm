@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Animation
 import Animation.Messenger
+import Dashboard.Page
 import Excelsior
 import Html
 import Landing.Page
@@ -24,6 +25,7 @@ type Page
     = Blank
     | Transitioning { from : Page }
     | Landing Landing.Page.Model
+    | Dashboard Dashboard.Page.Model
     | Pricing
     | Lesson Lesson.Page.Model
     | Quiz Quiz.Page.Model
@@ -122,6 +124,9 @@ goTo destination model =
                 Just Route.Root ->
                     Task.perform (Loaded << Landing) (Landing.Page.init model.context)
 
+                Just Route.Dashboard ->
+                    Task.perform (Loaded << Dashboard) (Dashboard.Page.init model.context)
+
                 Just Route.Pricing ->
                     static Pricing
 
@@ -160,6 +165,9 @@ viewPage page =
 
         Landing model ->
             Landing.Page.view model
+
+        Dashboard model ->
+            Dashboard.Page.view model
 
         Pricing ->
             Pricing.Page.view

@@ -1,4 +1,4 @@
-module Lesson.Sequence exposing (Sequence, atStart, current, decoder, edit, mapToList, next, previous)
+module Lesson.Sequence exposing (Location(..), Sequence, current, decoder, edit, mapToList, next, previous)
 
 import Json.Decode
 
@@ -22,14 +22,20 @@ decoder =
             )
 
 
-atStart : Sequence a -> Bool
-atStart (Sequence { before }) =
-    List.isEmpty before
+type Location
+    = Start
+    | End
+    | Middle
 
 
-current : Sequence a -> a
-current (Sequence { this }) =
-    this
+current : Sequence a -> ( Location, a )
+current (Sequence { before, this, after }) =
+    if List.isEmpty before then
+        ( Start, this )
+    else if List.isEmpty after then
+        ( End, this )
+    else
+        ( Middle, this )
 
 
 edit : (a -> a) -> Sequence a -> Sequence a

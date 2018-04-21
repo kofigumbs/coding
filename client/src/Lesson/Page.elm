@@ -12,6 +12,7 @@ import Json.Encode as E
 import Lesson.Code exposing (Code)
 import Lesson.Editor
 import Lesson.Sequence exposing (Sequence)
+import Route
 import Task exposing (Task)
 
 
@@ -174,10 +175,7 @@ view model =
             [ class "section" ]
             [ div
                 [ class "container" ]
-                [ viewItem
-                    (Lesson.Sequence.atStart model.items)
-                    (Lesson.Sequence.current model.items)
-                ]
+                [ viewItem <| Lesson.Sequence.current model.items ]
             ]
         , when model.overlay <|
             \overlay ->
@@ -219,8 +217,8 @@ viewContentLesson isCurrent { title } =
         [ text title ]
 
 
-viewItem : Bool -> Item -> Html Msg
-viewItem atStart item =
+viewItem : ( Lesson.Sequence.Location, Item ) -> Html Msg
+viewItem ( location, item ) =
     div
         []
         [ h1 [ class "title" ] [ text item.title ]
@@ -236,12 +234,19 @@ viewItem atStart item =
                     [ class "button is-primary is-medium is-inverted"
                     , title "Previous"
                     , onClick Previous
-                    , disabled atStart
+                    , disabled <| location == Lesson.Sequence.Start
                     ]
                     [ strong [] [ text "←" ] ]
-                , button
-                    [ class "button is-primary is-medium", onClick Next ]
-                    [ strong [] [ text "→ Next" ] ]
+                , if location == Lesson.Sequence.End then
+                    a
+                        [ class "button is-primary is-medium"
+                        , Route.href Route.Dashboard
+                        ]
+                        [ strong [] [ text "✔ Finish" ] ]
+                  else
+                    button
+                        [ class "button is-primary is-medium", onClick Next ]
+                        [ strong [] [ text "→ Next" ] ]
                 ]
             ]
         ]
