@@ -22,27 +22,52 @@ json =
                     {
                         "answer": "`\\"5\\"`",
                         "correct": false,
-                        "explanation": "TODO: something about quotes"
+                        "explanation": "Anything in quotes is a String. Yes, 5 is a number, but once we put it in quotes, Elm treats it like any other quoted text."
                     },
                     {
                         "answer": "`5`",
                         "correct": true,
-                        "explanation": "TODO: something about numbers"
+                        "explanation": "`5` is a number, not a String."
                     },
                     {
                         "answer": "`toString 5`",
                         "correct": false,
-                        "explanation": "TODO: something about functions"
+                        "explanation": "`toString` is a function that **turns its input into a String**. So when we write `toString 5`, we now have a String to use elsewhere."
                     }
                 ]
             },
             {
-                "content": "# TODO",
+                "content": "# Elm needs `main` to be a \\\\_\\\\_\\\\_\\\\_\\\\_\\\\_ in order to show something on the screen.",
                 "options": [
                     {
-                        "answer": "For show",
+                        "answer": "Html",
                         "correct": true,
-                        "explanation": "Nice!"
+                        "explanation": "At the end of the day, Html is the language of the internet. Elm generates Html for us."
+                    },
+                    {
+                        "answer": "String",
+                        "correct": false,
+                        "explanation": "_Hint:_ we used `Html.text` to turn a String into a \\\\_\\\\_\\\\_\\\\_\\\\_\\\\_."
+                    },
+                    {
+                        "answer": "number",
+                        "correct": false,
+                        "explanation": "_Hint:_ we used `Html.text` to turn a String into a \\\\_\\\\_\\\\_\\\\_\\\\_\\\\_."
+                    }
+                ]
+            },
+            {
+                "content": "# What text will appear on the screen when this code runs:\\n\\n```\\nimport Html\\n\\nhello = \\"Hello\\"\\naGreeting = hello\\nmain = Html.text aGreeting\\n```",
+                "options": [
+                    {
+                        "answer": "a Greeting",
+                        "correct": false,
+                        "explanation": "`aGreeting` is **a variable**. Variables have contents and can be referenced. Elm doesn't show a variable name, but rather the **contents of the variable**."
+                    },
+                    {
+                        "answer": "Hello",
+                        "correct": true,
+                        "explanation": ""
                     }
                 ]
             }
@@ -166,7 +191,17 @@ viewSelected maybeOption =
             text ""
 
         Just { explanation, correct } ->
-            Content.view explanation
+            div
+                []
+                [ h2
+                    [ class "subtitle is-2" ]
+                    [ if correct then
+                        text "🎉 Nice!"
+                      else
+                        text "\x1F914 Not quite..."
+                    ]
+                , Content.view explanation
+                ]
 
 
 selectedColor : Maybe Option -> Option -> Attribute msg
