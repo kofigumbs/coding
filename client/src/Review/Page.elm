@@ -16,7 +16,7 @@ json =
     """{
         "questions": [
             {
-                "content": "Which of these is _NOT_ a String?",
+                "content": "# Which of these is _NOT_ a String?",
                 "options": [
                     {
                         "answer": "`\\"5\\"`",
@@ -29,7 +29,7 @@ json =
                         "explanation": "TODO: something about numbers"
                     },
                     {
-                        "answer": "`(toString 5)`",
+                        "answer": "`toString 5`",
                         "correct": false,
                         "explanation": "TODO: something about functions"
                     }
@@ -40,7 +40,9 @@ json =
 
 
 type alias Model =
-    { questions : Sequence Question }
+    { selected : Maybe Option
+    , questions : Sequence Question
+    }
 
 
 type alias Question =
@@ -50,21 +52,22 @@ type alias Question =
 
 
 type alias Option =
-    { answer : String
-    , correct : Bool
+    { answer : Content
     , explanation : Content
+    , correct : Bool
     }
 
 
 type Msg
     = NoOp
+    | Select Option
 
 
 init : Excelsior.Context -> String -> Task Never Model
 init context slug =
     case D.decodeString (D.field "questions" <| Sequence.decoder question) json of
         Ok questions ->
-            Task.succeed (Model questions)
+            Task.succeed (Model Nothing questions)
 
         Err reason ->
             Debug.crash reason
@@ -77,9 +80,9 @@ question =
         (D.field "options" <|
             D.list <|
                 D.map3 Option
-                    (D.field "answer" D.string)
-                    (D.field "correct" D.bool)
+                    (D.field "answer" Content.decoder)
                     (D.field "explanation" Content.decoder)
+                    (D.field "correct" D.bool)
         )
 
 
@@ -89,6 +92,9 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        Select option ->
+            ( { model | selected = Just option }, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
@@ -97,10 +103,16 @@ view model =
             Sequence.current model.questions
     in
     div
-        [ class "hero is-fullheight" ]
+        [ class "section" ]
         [ div
-            [ class "hero-body" ]
+            [ class "container" ]
             [ Content.view content
+            , div
+                [ class "columns" ]
+                [ div [ class "column" ] <|
+                    List.map (viewOption model.selected) options
+                , div [ class "column" ] [ viewSelected model.selected ]
+                ]
             , Pagination.view
                 { previous = onClick NoOp
                 , next = onClick NoOp
@@ -109,3 +121,39 @@ view model =
                 location
             ]
         ]
+
+
+viewOption : Maybe Option -> Option -> Html Msg
+viewOption selected current =
+    div
+        [ class "notification"
+        , selectedColor selected current
+        , style [ ( "cursor", "pointer" ) ]
+        , onClick <| Select current
+        ]
+        [ Content.view current.answer ]
+
+
+viewSelected : Maybe Option -> Html Msg
+viewSelected maybeOption =
+    case maybeOption of
+        Nothing ->
+            text ""
+
+        Just { explanation, correct } ->
+            Content.view explanation
+
+
+selectedColor : Maybe Option -> Option -> Attribute msg
+selectedColor maybeSelected current =
+    case maybeSelected of
+        Nothing ->
+            class ""
+
+        Just selected ->
+            if selected == current && current.correct then
+                class "is-info"
+            else if selected == current then
+                class "is-warning"
+            else
+                class ""
