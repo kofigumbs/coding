@@ -80,7 +80,7 @@ viewLesson { title, slug } =
             [ text title ]
         , a
             [ class "button is-inverted is-primary"
-            , Route.href <| Route.Quiz slug
+            , Route.href <| Route.Review slug
             ]
             [ strong [] [ text "Review" ] ]
         ]

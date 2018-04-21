@@ -1,6 +1,6 @@
 ---
 
-title: Review — what did we learn?
+title: What did we learn?
 
 ---
 

@@ -1,4 +1,4 @@
-module Quiz.Page exposing (Model, Msg, init, update, view)
+module Review.Page exposing (Model, Msg, init, update, view)
 
 import Excelsior
 import Html exposing (..)

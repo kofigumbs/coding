@@ -11,7 +11,7 @@ type Route
     | Dashboard
     | Pricing
     | Lesson String
-    | Quiz String
+    | Review String
 
 
 fromLocation : Location -> Maybe Route
@@ -29,7 +29,7 @@ parser =
         , map Dashboard <| s "dashboard"
         , map Pricing <| s "pricing"
         , map Lesson <| s "lesson" </> string
-        , map Quiz <| s "quiz" </> string
+        , map Review <| s "review" </> string
         ]
 
 
@@ -58,5 +58,5 @@ hash route =
         Lesson code ->
             "#/lesson/" ++ code
 
-        Quiz code ->
-            "#/quiz/" ++ code
+        Review code ->
+            "#/review/" ++ code

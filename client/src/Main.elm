@@ -9,7 +9,7 @@ import Landing.Page
 import Lesson.Page
 import Navigation
 import Pricing.Page
-import Quiz.Page
+import Review.Page
 import Route
 import Task
 
@@ -28,7 +28,7 @@ type Page
     | Dashboard Dashboard.Page.Model
     | Pricing
     | Lesson Lesson.Page.Model
-    | Quiz Quiz.Page.Model
+    | Review Review.Page.Model
 
 
 init : Excelsior.Context -> Navigation.Location -> ( Model, Cmd Msg )
@@ -78,7 +78,7 @@ type Msg
     | Animate Animation.Msg
     | DashboardMsg Dashboard.Page.Msg
     | LessonMsg Lesson.Page.Msg
-    | QuizMsg Quiz.Page.Msg
+    | ReviewMsg Review.Page.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -110,10 +110,10 @@ update msg model =
                 |> Tuple.mapFirst (\new -> { model | page = Lesson new })
                 |> Tuple.mapSecond (Cmd.map LessonMsg)
 
-        ( QuizMsg pageMsg, Quiz pageModel ) ->
-            Quiz.Page.update pageMsg pageModel
-                |> Tuple.mapFirst (\new -> { model | page = Quiz new })
-                |> Tuple.mapSecond (Cmd.map QuizMsg)
+        ( ReviewMsg pageMsg, Review pageModel ) ->
+            Review.Page.update pageMsg pageModel
+                |> Tuple.mapFirst (\new -> { model | page = Review new })
+                |> Tuple.mapSecond (Cmd.map ReviewMsg)
 
         ( _, _ ) ->
             ( model, Cmd.none )
@@ -139,8 +139,8 @@ goTo destination model =
                 Just (Route.Lesson slug) ->
                     Task.perform (Loaded << Lesson) (Lesson.Page.init model.context slug)
 
-                Just (Route.Quiz slug) ->
-                    Task.perform (Loaded << Quiz) (Quiz.Page.init model.context slug)
+                Just (Route.Review slug) ->
+                    Task.perform (Loaded << Review) (Review.Page.init model.context slug)
     in
     if model.page == Blank then
         ( model, cmd )
@@ -181,8 +181,8 @@ viewPage page =
         Lesson model ->
             Html.map LessonMsg <| Lesson.Page.view model
 
-        Quiz model ->
-            Html.map QuizMsg <| Quiz.Page.view model
+        Review model ->
+            Html.map ReviewMsg <| Review.Page.view model
 
         Transitioning { from } ->
             viewPage from
