@@ -7,6 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as D
 import Pagination
+import Route
 import Sequence exposing (Sequence)
 import Task exposing (Task)
 
@@ -34,6 +35,16 @@ json =
                         "explanation": "TODO: something about functions"
                     }
                 ]
+            },
+            {
+                "content": "# TODO",
+                "options": [
+                    {
+                        "answer": "For show",
+                        "correct": true,
+                        "explanation": "Nice!"
+                    }
+                ]
             }
         ]
     }"""
@@ -59,7 +70,8 @@ type alias Option =
 
 
 type Msg
-    = NoOp
+    = Next
+    | Previous
     | Select Option
 
 
@@ -89,8 +101,21 @@ question =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
+        Next ->
+            ( { model
+                | questions = Sequence.next model.questions
+                , selected = Nothing
+              }
+            , Cmd.none
+            )
+
+        Previous ->
+            ( { model
+                | questions = Sequence.previous model.questions
+                , selected = Nothing
+              }
+            , Cmd.none
+            )
 
         Select option ->
             ( { model | selected = Just option }, Cmd.none )
@@ -114,9 +139,9 @@ view model =
                 , div [ class "column" ] [ viewSelected model.selected ]
                 ]
             , Pagination.view
-                { previous = onClick NoOp
-                , next = onClick NoOp
-                , finish = onClick NoOp
+                { previous = onClick Previous
+                , finish = whenCorrect model <| Route.href Route.Dashboard
+                , next = whenCorrect model <| onClick Next
                 }
                 location
             ]
@@ -157,3 +182,11 @@ selectedColor maybeSelected current =
                 class "is-warning"
             else
                 class ""
+
+
+whenCorrect : Model -> Attribute msg -> Attribute msg
+whenCorrect model attr =
+    if Maybe.map .correct model.selected == Just True then
+        attr
+    else
+        attribute "disabled" ""

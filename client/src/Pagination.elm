@@ -16,7 +16,7 @@ view { previous, next, finish } location =
             [ class "level-item" ]
             [ div
                 [ class "buttons" ]
-                [ a
+                [ button
                     [ class "button is-primary is-medium is-inverted"
                     , title "Previous"
                     , disabled <| location == Sequence.Start
@@ -28,7 +28,7 @@ view { previous, next, finish } location =
                         [ class "button is-primary is-medium", finish ]
                         [ strong [] [ text "✔ Finish" ] ]
                   else
-                    a
+                    button
                         [ class "button is-primary is-medium", next ]
                         [ strong [] [ text "→ Next" ] ]
                 ]
