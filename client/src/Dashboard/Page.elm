@@ -64,13 +64,13 @@ view model =
             [ div [ class "container" ] <|
                 h2 [ class "subtitle" ] [ text "Lessons" ]
                     :: List.intersperse (hr [] [])
-                        (List.map viewLesson model.lessons)
+                        (List.indexedMap viewLesson model.lessons)
             ]
         ]
 
 
-viewLesson : Lesson -> Html Msg
-viewLesson { title, slug } =
+viewLesson : Int -> Lesson -> Html Msg
+viewLesson index { title, slug } =
     div
         []
         [ a
@@ -78,9 +78,12 @@ viewLesson { title, slug } =
             , Route.href <| Route.Lesson slug
             ]
             [ text title ]
-        , a
-            [ class "button is-inverted is-primary"
-            , Route.href <| Route.Review slug
-            ]
-            [ strong [] [ text "Review" ] ]
+        , if index == 0 then
+            a
+                [ class "button is-inverted is-primary"
+                , Route.href <| Route.Review slug
+                ]
+                [ strong [] [ text "Review" ] ]
+          else
+            text ""
         ]
