@@ -57,7 +57,7 @@ json =
                 ]
             },
             {
-                "content": "# What text will appear on the screen when this code runs:\\n\\n```\\nimport Html\\n\\nhello = \\"Hello\\"\\naGreeting = hello\\nmain = Html.text aGreeting\\n```",
+                "content": "# What text will appear on the screen when this code runs?\\n\\n```\\nimport Html\\n\\nhello = \\"Hello\\"\\naGreeting = hello\\nmain = Html.text aGreeting\\n```",
                 "options": [
                     {
                         "answer": "a Greeting",

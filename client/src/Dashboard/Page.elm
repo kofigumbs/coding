@@ -71,19 +71,23 @@ view model =
 
 viewLesson : Int -> Lesson -> Html Msg
 viewLesson index { title, slug } =
-    div
-        []
-        [ a
-            [ class "button is-inverted is-info"
-            , Route.href <| Route.Lesson slug
-            ]
-            [ text title ]
-        , if index == 0 then
-            a
+    div [] <|
+        if index == 0 then
+            [ a
+                [ class "button is-inverted is-info"
+                , Route.href <| Route.Lesson slug
+                ]
+                [ text <| "✔ " ++ title ]
+            , a
                 [ class "button is-inverted is-primary"
                 , Route.href <| Route.Review slug
                 ]
                 [ strong [] [ text "Review" ] ]
-          else
-            text ""
-        ]
+            ]
+        else
+            [ a
+                [ class "button is-inverted is-info"
+                , Route.href <| Route.Lesson slug
+                ]
+                [ text title ]
+            ]
