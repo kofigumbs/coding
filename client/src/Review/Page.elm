@@ -177,8 +177,8 @@ viewOption : Maybe Option -> Option -> Html Msg
 viewOption selected current =
     div
         [ class "notification"
-        , selectedColor selected current
         , style [ ( "cursor", "pointer" ) ]
+        , selectedColor selected current
         , onClick <| Select current
         ]
         [ Content.view current.answer ]
