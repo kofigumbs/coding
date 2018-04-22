@@ -17,6 +17,6 @@ Given your former knowledge in Excel, we believe you can learn to code. The conc
 
 Whether you desire to add a programming language to your skill set, speak the language spoken by your IT counterparts or become a functional software engineer in your field, _Excel To Code_ will be your partner.
 
-NEW PAGE
+NEW PAGE - general coding -> why elm
 
 We created a course based on our respective background. First, the coding basics, then elm. Why Elm? Kofi, a software engineer professional, it is the most effective language to learn. It is structured, it is ____
