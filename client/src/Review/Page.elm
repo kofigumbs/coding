@@ -27,7 +27,7 @@ json =
                     {
                         "answer": "`5`",
                         "correct": true,
-                        "explanation": "`5` is a number, not a String."
+                        "explanation": "`5` is a number, not a String.\\n\\n---\\n\\n> ⭐️ **Try** clicking the other options to see more explanations."
                     },
                     {
                         "answer": "`toString 5`",
@@ -42,7 +42,7 @@ json =
                     {
                         "answer": "Html",
                         "correct": true,
-                        "explanation": "At the end of the day, Html is the language of the internet. Elm generates Html for us."
+                        "explanation": "At the end of the day, Html is the language of the web. Elm generates Html for us."
                     },
                     {
                         "answer": "String",
@@ -68,6 +68,11 @@ json =
                         "answer": "Hello",
                         "correct": true,
                         "explanation": ""
+                    },
+                    {
+                        "answer": "hello",
+                        "correct": false,
+                        "explanation": "`hello` is **a variable**. Variables have contents and can be referenced. Elm doesn't show a variable name, but rather the **contents of the variable**."
                     }
                 ]
             }

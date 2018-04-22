@@ -225,7 +225,7 @@ viewItem ( location, item ) =
         [ h1 [ class "title" ] [ text item.title ]
         , div
             [ class "columns" ]
-            [ when item.editor <| viewEditor [ class "column" ]
+            [ when item.editor <| viewEditor [ class "column is-sticky" ]
             , div [ class "column" ] [ Content.view item.content ]
             ]
         , Pagination.view

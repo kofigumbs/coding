@@ -128,7 +128,7 @@ viewLessonTitle index title =
     h3
         [ class "subtitle is-4" ]
         [ span
-            [ style [ ( "opacity", "0.7" ) ] ]
+            [ style [ ( "opacity", "0.4" ) ] ]
             [ text <| toString (index + 1) ++ ". " ]
         , text title
         ]
