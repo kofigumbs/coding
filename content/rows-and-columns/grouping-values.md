@@ -16,7 +16,7 @@ In Elm, the simplest way to group values is with a **List**.
 
 We write Lists using square brackets and commas, like `[1, 2, 3]`.
 There are a lot of functions for working with Lists in the `List` file.
-`sum` is one of those functions.
+`List.sum` is one of those functions.
 It works just like `SUM()` in Excel:
 it takes a List of numbers as input and returns one number as output.
 
@@ -25,3 +25,7 @@ That's because Lists are so common in Elm, that **`List` is automatically import
 Technically, you can write it if you want, but there's no reason to do so.
 
 > ⭐️ **Try** adding more numbers to the List.
+
+---
+
+> ⭐️ **Try** switching out `List.sum` for `List.product`, which works like `PRODUCT()` in Excel.

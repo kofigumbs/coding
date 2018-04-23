@@ -1,7 +1,6 @@
 module Lesson.Page exposing (Model, Msg, init, update, view)
 
 import Content exposing (Content)
-import Dom
 import Excelsior
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -92,7 +91,7 @@ update msg model =
             pure model
 
         EditorOpen ->
-            ( { model | items = Sequence.edit (setInteractive True) model.items }, focusEditor )
+            ( { model | items = Sequence.edit (setInteractive True) model.items }, Lesson.Editor.focus (\_ -> NoOp) )
 
         EditorClose ->
             pure { model | items = Sequence.edit (setInteractive False) model.items }
@@ -152,11 +151,6 @@ compile context code =
         )
         |> Task.onError (\_ -> Task.succeed Unknown)
         |> Task.perform CompileResponse
-
-
-focusEditor : Cmd Msg
-focusEditor =
-    Dom.focus Lesson.Editor.id |> Task.attempt (\_ -> NoOp)
 
 
 view : Model -> Html Msg

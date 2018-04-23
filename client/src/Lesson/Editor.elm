@@ -1,13 +1,20 @@
-module Lesson.Editor exposing (id, view)
+module Lesson.Editor exposing (focus, view)
 
+import Dom
 import Html exposing (Html, textarea)
 import Html.Attributes as A
 import Html.Events as E
+import Task
 
 
 id : String
 id =
     "lesson-editor"
+
+
+focus : (Result Dom.Error () -> msg) -> Cmd msg
+focus toMsg =
+    Dom.focus id |> Task.attempt toMsg
 
 
 view : (String -> msg) -> String -> Html msg
