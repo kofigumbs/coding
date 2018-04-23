@@ -3,7 +3,7 @@ title: Naming errors
 code: |
   import Html
 
-  song : Sting
+  [focus|song : Sting|]
   song = "Shape of My Heart"
 
   main = Html.text song

@@ -8,7 +8,7 @@
   - referencing-data
   - what-we-learned
 
-- title: First look at error messages
+- title: Reading error messages
   location: error-messages
   items:
   - values-and-types
@@ -16,3 +16,11 @@
   - naming-errors
   - syntax-errors
   - what-we-learned
+
+- title: Rows and columns
+  location: rows-and-columns
+  items:
+  - grouping-values
+  - html-groups
+  # groups-with-names
+  # what-we-learned

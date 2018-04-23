@@ -117,7 +117,7 @@ viewLesson progress index { title, slug } =
                 , disabledLink "is-primary" "Review"
                 ]
             else
-                [ disabledLink "is-light" "Lesson"
+                [ activeLink (Route.Lesson slug) "is-light has-text-primary" "Lesson"
                 , disabledLink "is-light" "Review"
                 ]
         ]
