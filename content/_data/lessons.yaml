@@ -8,10 +8,11 @@
   - referencing-data
   - what-we-learned
 
-- title: How to avoid getting stuck
-  location: how-to-avoid-getting-stuck
+- title: First look at error messages
+  location: error-messages
   items:
-  - errors
-  - dealing-with-typos
-  - things-dont-match
-  # what-we-learned
+  - values-and-types
+  - type-errors
+  - naming-errors
+  - syntax-errors
+  - what-we-learned
