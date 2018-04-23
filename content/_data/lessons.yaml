@@ -21,6 +21,6 @@
   location: rows-and-columns
   items:
   - grouping-values
-  - html-groups
-  # groups-with-names
-  # what-we-learned
+  - showing-multiple-things
+  - groups-with-names
+  - what-we-learned

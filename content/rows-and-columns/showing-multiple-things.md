@@ -1,10 +1,14 @@
 ---
-title: Html groups
+title: Showing multiple things on the screen
 code: |
   import Html
 
   main =
-    Html.div [] [focus|[ Html.text "Hello", Html.text "friend!" ]|]
+    Html.div [] [focus|
+      [ Html.text "Hello"
+      , Html.text " friend!"
+      ]
+    |]
 
 ---
 
@@ -18,4 +22,9 @@ Both inputs are Lists.
 We're going to leave the first List empty for now, and focus on the second list.
 The second list contains other Html values that you want to show inside the div.
 
-> ⭐️ **Try** add another entry to the List, so that the program says "Hello my friend!".
+Finally, notice how we can spread out our list across multiple lines.
+This is just to make things easier to read:
+it has no affect how Elm understands the code.
+
+> ⭐️ **Try** add another entry to the List,
+> so that the program says "Hello my friend!".

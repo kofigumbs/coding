@@ -3,7 +3,7 @@ title: Grouping values
 code: |
   import Html
 
-  total = List.sum [focus|[1, 2, 3]|]
+  total = [focus|List.sum [ 1, 2, 3 ]|]
 
   main = Html.text (toString total)
 
@@ -14,7 +14,7 @@ but Excel wouldn't be such a great tool if you could only work one cell at a tim
 In a spreadsheet, we can **group values** by their row or column.
 In Elm, the simplest way to group values is with a **List**.
 
-We write Lists using square brackets and commas, like `[1, 2, 3]`.
+We write Lists using square brackets and commas, like `[ 1, 2, 3 ]`.
 There are a lot of functions for working with Lists in the `List` file.
 `List.sum` is one of those functions.
 It works just like `SUM()` in Excel:
@@ -28,4 +28,9 @@ Technically, you can write it if you want, but there's no reason to do so.
 
 ---
 
-> ⭐️ **Try** switching out `List.sum` for `List.product`, which works like `PRODUCT()` in Excel.
+> ⭐️ **Try** switching out `List.sum` for these other functions:
+>
+> |Elm           |Excel      |
+> |--------------|-----------|
+> |`List.product`|`PRODUCT()`|
+> |`List.length` |`COUNT()`  |
