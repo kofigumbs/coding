@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Json.Decode as D
+import Navbar
 import Route
 import Task exposing (Task)
 
@@ -27,9 +28,10 @@ init context =
 view : Model -> Html msg
 view { content } =
     div
-        [ class "hero is-fullheight" ]
-        [ div
-            [ class "hero-body" ]
+        []
+        [ Navbar.view []
+        , div
+            [ class "section" ]
             [ div
                 [ class "columns is-centered" ]
                 [ div

@@ -10,6 +10,7 @@ import Json.Decode as D
 import Json.Encode as E
 import Lesson.Code exposing (Code)
 import Lesson.Editor
+import Navbar
 import Pagination
 import Route
 import Sequence exposing (Sequence)
@@ -157,15 +158,8 @@ view : Model -> Html Msg
 view model =
     div
         []
-        [ nav
-            [ class "navbar" ]
-            [ div
-                [ class "navbar-brand" ]
-                [ div
-                    [ class "navbar-item" ]
-                    [ viewContents model.lesson model.items ]
-                ]
-            ]
+        [ Navbar.view
+            [ viewContents model.lesson model.items ]
         , section
             [ class "section" ]
             [ div

@@ -136,7 +136,7 @@ viewProgress lesson project =
                     [ text "You are "
                     , strong
                         [ class "has-text-weight-bold"
-                        , style [ ( "border-bottom", "2px solid white" ) ]
+                        , style [ ( "border-bottom", "1px solid white" ) ]
                         ]
                         [ viewPercentage lesson project ]
                     , text " done with this project"
@@ -194,6 +194,14 @@ viewLesson { title, slug } =
                 , Route.href <| Route.Lesson slug
                 ]
                 [ text "✔ Let's go" ]
+            ]
+        , div
+            [ class "notification is-light" ]
+            [ div
+                []
+                [ h2 [ class "subtitle is-uppercase" ] [ text "Review" ]
+                , h3 [ class "title has-text-grey-light" ] [ text "Coming soon..." ]
+                ]
             ]
         ]
 
