@@ -13,11 +13,17 @@ end
 task default: [:dashboard, :lessons, :info]
 
 task :dashboard do
-  YAML.load_file(File.join(CONTENT, "_data", "lessons.yaml")).tap do |yaml|
+  YAML.load_file(File.join(CONTENT, "_data", "projects.yaml")).tap do |projects|
     output = File.join BUILD, "dashboard"
     data = {
-      lessons: yaml.map do |lesson|
-        lesson.select { |key, _| key =~ /title|location/ }
+      projects: projects.map do |project|
+        {
+          title: project["title"],
+          slug: project["slug"],
+          lessons: project["lessons"].map do |lesson|
+            lesson.select { |key, _| key =~ /title|location/ }
+          end,
+        }
       end
     }
     File.write output, data.to_json
@@ -25,15 +31,17 @@ task :dashboard do
 end
 
 task :lessons do
-  YAML.load_file(File.join(CONTENT, "_data", "lessons.yaml")).each do |config|
+  YAML.load_file(File.join(CONTENT, "_data", "projects.yaml")).each do |project|
     output = File.join BUILD, "lessons"
-    data = {
-      title: config["title"],
-      items: config["items"].map do |item|
-        content_data File.join CONTENT, config["location"], "#{item}.md"
-      end
-    }
-    File.write File.join(output, config["location"]), data.to_json
+    project["lessons"].each do |config|
+      data = {
+        title: config["title"],
+        items: config["items"].map do |item|
+          content_data File.join CONTENT, config["location"], "#{item}.md"
+        end
+      }
+      File.write File.join(output, config["location"]), data.to_json
+    end
   end
 end
 

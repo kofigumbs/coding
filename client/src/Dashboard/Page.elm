@@ -10,8 +10,16 @@ import Task exposing (Task)
 
 
 type alias Model =
-    { lessons : List Lesson
-    , progress : Progress
+    { roadmap : List Project
+    , project : Project
+    , lesson : Lesson
+    }
+
+
+type alias Project =
+    { title : String
+    , slug : String
+    , lessons : List Lesson
     }
 
 
@@ -22,9 +30,8 @@ type alias Lesson =
 
 
 type alias Progress =
-    { finished : List String
-    , current : String
-    , reviewing : Bool
+    { project : String
+    , lesson : String
     }
 
 
@@ -34,31 +41,60 @@ type alias Msg =
 
 init : Excelsior.Context -> Task Never Model
 init context =
-    Task.map2 Model (getLessons context) (getProgress context)
+    Task.map2 (,) (getProjects context) (getProgress context)
         |> Task.onError ({- TODO -} toString >> Debug.crash)
+        |> Task.andThen fromProgress
 
 
-getLessons : Excelsior.Context -> Task Http.Error (List Lesson)
-getLessons context =
+getProjects : Excelsior.Context -> Task Http.Error (List Project)
+getProjects context =
     Http.get (context.api.content ++ "/dashboard")
-        (D.field "lessons" <|
+        (D.field "projects" <|
             D.list <|
-                D.map2 Lesson
+                D.map3 Project
                     (D.field "title" D.string)
-                    (D.field "location" D.string)
+                    (D.field "slug" D.string)
+                    (D.field "lessons" <|
+                        D.list <|
+                            D.map2 Lesson
+                                (D.field "title" D.string)
+                                (D.field "location" D.string)
+                    )
         )
         |> Http.toTask
 
 
 getProgress : Excelsior.Context -> Task Http.Error Progress
 getProgress context =
-    Http.get (context.api.user ++ "/progress")
-        (D.map3 Progress
-            (D.field "finished" <| D.list D.string)
-            (D.field "current" D.string)
-            (D.field "reviewing" D.bool)
-        )
-        |> Http.toTask
+    Task.succeed
+        { project = "counter"
+        , lesson = "error-messages"
+        }
+
+
+fromProgress : ( List Project, Progress ) -> Task Never Model
+fromProgress ( projects, progress ) =
+    case findBySlug progress.project projects of
+        Nothing ->
+            Debug.crash {- TODO -} ""
+
+        Just project ->
+            case findBySlug progress.lesson project.lessons of
+                Nothing ->
+                    Debug.crash {- TODO -} ""
+
+                Just lesson ->
+                    Task.succeed <| Model projects project lesson
+
+
+findBySlug : String -> List { a | slug : String } -> Maybe { a | slug : String }
+findBySlug slug list =
+    case List.filter (.slug >> (==) slug) list of
+        [ needle ] ->
+            Just needle
+
+        _ ->
+            Nothing
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -72,73 +108,119 @@ view : Model -> Html Msg
 view model =
     div
         []
-        [ div
-            [ class "hero" ]
-            [ div
-                [ class "hero-body" ]
-                [ div
-                    [ class "container" ]
-                    [ h1 [ class "title" ] [ text "🏠 Welcome home!" ] ]
-                ]
-            ]
+        [ viewProgress model.lesson model.project
         , div
             [ class "section" ]
             [ div
                 [ class "container" ]
-                [ div [ class "columns is-centered" ]
-                    [ div [ class "column is-three-quarters" ] <|
-                        List.indexedMap (viewLesson model.progress) model.lessons
+                [ div
+                    [ class "columns" ]
+                    [ viewLesson model.lesson
+                    , viewProjects model.project.slug model.roadmap
                     ]
                 ]
             ]
         ]
 
 
-viewLesson : Progress -> Int -> Lesson -> Html Msg
-viewLesson progress index { title, slug } =
+viewProgress : Lesson -> Project -> Html Msg
+viewProgress lesson project =
     div
-        [ classList
-            [ ( "notification", True )
-            , ( "is-primary", slug == progress.current )
+        [ class "hero is-medium is-primary is-bold" ]
+        [ div
+            [ class "hero-body" ]
+            [ div
+                [ class "container" ]
+                [ h1
+                    [ class "title is-1 has-text-weight-light" ]
+                    [ text "You are "
+                    , strong
+                        [ class "has-text-weight-bold"
+                        , style [ ( "border-bottom", "2px solid white" ) ]
+                        ]
+                        [ viewPercentage lesson project ]
+                    , text " done with this project"
+                    ]
+                , a
+                    [ class "button is-primary is-inverted" ]
+                    [ text "What are we building?" ]
+                ]
             ]
         ]
-        [ viewLessonTitle index title
-        , div [ class "buttons is-right" ] <|
-            if List.member slug progress.finished then
-                [ activeLink (Route.Lesson slug) "is-light has-text-primary" "✔ Lesson"
-                , activeLink (Route.Review slug) "is-light has-text-primary" "✔ Review"
-                ]
-            else if slug == progress.current && progress.reviewing then
-                [ activeLink (Route.Lesson slug) "is-primary" "✔ Lesson"
-                , activeLink (Route.Review slug) "is-primary is-inverted" "Review"
-                ]
-            else if slug == progress.current then
-                [ activeLink (Route.Lesson slug) "is-primary is-inverted" "Lesson"
-                , disabledLink "is-primary" "Review"
-                ]
+
+
+viewProjects : String -> List Project -> Html Msg
+viewProjects current roadmap =
+    div
+        [ class "column is-one-third" ]
+        [ aside
+            [ class "menu" ]
+            [ p [ class "menu-label" ] [ text "Projects" ]
+            , ul [ class "menu-list" ] <| List.map (viewProjectItem current) roadmap
+            ]
+        ]
+
+
+viewProjectItem : String -> Project -> Html Msg
+viewProjectItem current project =
+    let
+        ( active, children ) =
+            if current == project.slug then
+                ( "is-active", ul [] <| List.map viewLessonItem <| project.lessons )
             else
-                [ activeLink (Route.Lesson slug) "is-light has-text-primary" "Lesson"
-                , disabledLink "is-light" "Review"
+                ( "", text "" )
+    in
+    li [] [ a [ class active ] [ text project.title ], children ]
+
+
+viewLessonItem : Lesson -> Html Msg
+viewLessonItem { title, slug } =
+    li [] [ a [ Route.href <| Route.Lesson slug ] [ text title ] ]
+
+
+viewLesson : Lesson -> Html Msg
+viewLesson { title, slug } =
+    div
+        [ class "column" ]
+        [ div
+            [ class "box" ]
+            [ div
+                [ class "block" ]
+                [ h2 [ class "subtitle is-uppercase" ] [ text "Up next" ]
+                , h3 [ class "title" ] [ text title ]
                 ]
+            , a
+                [ class "button is-primary is-large"
+                , Route.href <| Route.Lesson slug
+                ]
+                [ text "✔ Let's go" ]
+            ]
         ]
 
 
-viewLessonTitle : Int -> String -> Html msg
-viewLessonTitle index title =
-    h3
-        [ class "subtitle is-4" ]
-        [ span
-            [ style [ ( "opacity", "0.4" ) ] ]
-            [ text <| toString (index + 1) ++ ". " ]
-        , text title
-        ]
+viewPercentage : Lesson -> Project -> Html msg
+viewPercentage lesson project =
+    let
+        finished =
+            countCompleted 0 lesson.slug project.lessons
+
+        total =
+            List.length project.lessons
+
+        hundredth =
+            toString (100 * toFloat finished / toFloat total)
+    in
+    text <| String.left 2 hundredth ++ "%"
 
 
-activeLink : Route.Route -> String -> String -> Html msg
-activeLink route extraClass name =
-    a [ class <| "button " ++ extraClass, Route.href route ] [ strong [] [ text name ] ]
+countCompleted : Int -> String -> List Lesson -> Int
+countCompleted acc needle haystack =
+    case haystack of
+        [] ->
+            0
 
-
-disabledLink : String -> String -> Html msg
-disabledLink extraClass name =
-    a [ class <| "button " ++ extraClass, attribute "disabled" "" ] [ strong [] [ text name ] ]
+        { slug } :: rest ->
+            if slug == needle then
+                acc
+            else
+                countCompleted (1 + acc) needle rest
