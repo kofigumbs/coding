@@ -14,6 +14,7 @@ Think briefly about **spreadsheet cells** in Excel: what are their properties? H
 * Cells **can be referenced in other cells**
 
 Well, in Elm, **variables** have the same properties. In this example, the variable `meaningOfLife` has the content `42`. This means anywhere you can use `42`, you can now use `meaningOfLife` instead! Variables help us **give names to ideas** in our program.
+Variable names start with a lowercase letter.
 
 **`main` is a special variable** that Elm looks for in order to show a page. That's why it's been in every example so far. `main` always has to have Html contents.
 

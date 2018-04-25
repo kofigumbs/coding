@@ -10,10 +10,8 @@ view items =
     nav
         [ class "navbar" ]
         [ div [ class "navbar-brand" ] <|
-            a
-                [ class "navbar-item"
-                , Route.href Route.Dashboard
-                ]
+            span
+                [ class "navbar-item" ]
                 [ img
                     [ alt "Logo"
                     , src "http://acmelogos.com/images/logo-1.svg"

@@ -30,7 +30,9 @@
 
   - title: Interactive programs
     location: interactive-programs
-    items: []
+    items:
+    - functions
+    - function-types
 
 - title: Guessing Game
   slug: guessing-game

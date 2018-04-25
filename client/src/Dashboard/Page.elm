@@ -191,7 +191,7 @@ viewLesson { title, slug } =
             [ class "notification is-light" ]
             [ div
                 []
-                [ h2 [ class "menu-label" ] [ text "Review" ]
+                [ h2 [ class "menu-label" ] [ text "Reviews" ]
                 , h3 [ class "title has-text-grey-light" ] [ text "Coming soon …" ]
                 ]
             ]
