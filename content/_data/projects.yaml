@@ -32,7 +32,19 @@
     location: interactive-programs
     items:
     - functions
+    - writing-programs
+    - messages
+    - if-statements
+    - what-we-learned
+
+  - title: Real-world tips
+    location: real-world-tips
+    items:
+    # intro
     - function-types
+    # generic-types
+    # html-attributes
+    # exposing
 
 - title: Guessing Game
   slug: guessing-game
