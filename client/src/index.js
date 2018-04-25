@@ -6,6 +6,7 @@ Main.embed(document.getElementById('root'), {
   api: {
     content: "/content",
     runner: "http://localhost:3001",
+    user: "/user",
   },
 });
 
