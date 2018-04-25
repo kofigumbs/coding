@@ -51,7 +51,7 @@ properties =
         ]
     , loading =
         [ Animation.opacity 0.0
-        , Animation.translate (Animation.px 0) (Animation.px 150)
+        , Animation.translate (Animation.px 0) (Animation.px 25)
         ]
     }
 

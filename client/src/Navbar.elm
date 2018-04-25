@@ -15,9 +15,8 @@ view items =
                 , Route.href Route.Dashboard
                 ]
                 [ img
-                    [ src "http://via.placeholder.com/32x32"
-                    , alt "Logo"
-                    , class "image is-32x32"
+                    [ alt "Logo"
+                    , src "http://acmelogos.com/images/logo-1.svg"
                     ]
                     []
                 ]
