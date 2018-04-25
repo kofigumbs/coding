@@ -103,7 +103,7 @@ view model =
                 [ div
                     [ class "columns" ]
                     [ viewLesson model.upNext
-                    , viewProjects model.browsing model.roadmap
+                    , viewRoadmap model.browsing model.roadmap
                     ]
                 ]
             ]
@@ -134,13 +134,13 @@ viewProgress upNext learningPath =
         ]
 
 
-viewProjects : Project -> List Project -> Html Msg
-viewProjects browsing roadmap =
+viewRoadmap : Project -> List Project -> Html Msg
+viewRoadmap browsing roadmap =
     div
         [ class "column is-one-third" ]
         [ aside
             [ class "menu" ]
-            [ p [ class "menu-label" ] [ text "Projects" ]
+            [ p [ class "menu-label" ] [ text "Roadmap" ]
             , ul [ class "menu-list" ] <| List.map (viewProjectItem browsing) roadmap
             ]
         ]
