@@ -178,11 +178,11 @@ viewLesson { title, slug } =
             [ class "box" ]
             [ div
                 [ class "block" ]
-                [ h2 [ class "subtitle is-uppercase" ] [ text "Up next" ]
+                [ h2 [ class "menu-label" ] [ text "Up next" ]
                 , h3 [ class "title" ] [ text title ]
                 ]
             , a
-                [ class "button is-primary is-large"
+                [ class "button is-primary is-medium"
                 , Route.href <| Route.Lesson slug
                 ]
                 [ text "✔ Let's go" ]
@@ -191,7 +191,7 @@ viewLesson { title, slug } =
             [ class "notification is-light" ]
             [ div
                 []
-                [ h2 [ class "subtitle is-uppercase" ] [ text "Review" ]
+                [ h2 [ class "menu-label" ] [ text "Review" ]
                 , h3 [ class "title has-text-grey-light" ] [ text "Coming soon …" ]
                 ]
             ]

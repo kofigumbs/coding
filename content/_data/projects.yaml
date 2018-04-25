@@ -28,6 +28,10 @@
     - groups-with-names
     - what-we-learned
 
+  - title: Interactive programs
+    location: interactive-programs
+    items: []
+
 - title: Guessing Game
   slug: guessing-game
   lessons: []

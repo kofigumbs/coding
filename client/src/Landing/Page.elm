@@ -6,7 +6,6 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Json.Decode as D
-import Navbar
 import Route
 import Task exposing (Task)
 
@@ -28,17 +27,13 @@ init context =
 view : Model -> Html msg
 view { content } =
     div
-        []
-        [ Navbar.view []
-        , div
-            [ class "section" ]
+        [ class "section" ]
+        [ div
+            [ class "columns is-centered" ]
             [ div
-                [ class "columns is-centered" ]
-                [ div
-                    [ class "column is-half" ]
-                    [ Content.view content
-                    , div [ class "buttons" ] [ startLink, learnLink ]
-                    ]
+                [ class "column is-half" ]
+                [ Content.view content
+                , div [ class "buttons" ] [ startLink, learnLink ]
                 ]
             ]
         ]
