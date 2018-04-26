@@ -34,8 +34,12 @@
     - functions
     - writing-programs
     - messages
-    # if-statements
     - what-we-learned
+
+  - title: Making decisions with IF
+    location: using-if
+    items: []
+    # if-statements
 
   - title: Real-world tips
     location: real-world-tips
