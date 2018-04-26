@@ -5,6 +5,7 @@ import Animation.Messenger
 import Dashboard.Page
 import Excelsior
 import Html
+import Js
 import Landing.Page
 import Lesson.Page
 import Navigation
@@ -72,7 +73,8 @@ animate =
 
 
 type Msg
-    = SetRoute (Maybe Route.Route)
+    = NoOp
+    | SetRoute (Maybe Route.Route)
     | Loaded Page
     | Transitioned Page
     | Animate Animation.Msg
@@ -88,7 +90,7 @@ update msg model =
             goTo destination model
 
         ( Transitioned page, _ ) ->
-            ( { model | page = page, style = queueInitial model }, Cmd.none )
+            ( { model | page = page, style = queueInitial model }, Js.scrollTop )
 
         ( Loaded page, Transitioning _ ) ->
             ( { model | style = queueNext page model }, Cmd.none )
