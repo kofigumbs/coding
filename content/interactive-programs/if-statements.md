@@ -9,8 +9,8 @@ code: |
     1
 
   update : String -> number -> number
-  update [focus|msg|] currentModel =
-    [focus|if msg == "Increment" then|]
+  update [focus|message|] currentModel =
+    [focus|if message == "Increment" then|]
       currentModel + 1
     [focus|else|]
       currentModel - 1
