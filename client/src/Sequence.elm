@@ -13,12 +13,12 @@ decoder =
         >> Json.Decode.andThen
             (\list ->
                 case list of
-                    first :: ((_ :: _) as rest) ->
+                    [] ->
+                        Json.Decode.fail "sequences cannot be empty"
+
+                    first :: rest ->
                         Json.Decode.succeed <|
                             Sequence { before = [], this = first, after = rest }
-
-                    _ ->
-                        Json.Decode.fail "sequences must have at least 2 items"
             )
 
 
