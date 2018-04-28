@@ -27,7 +27,7 @@ So far, we've just been generating Html in `main`,
 but now that we know about functions, we can do much more.
 Functions let us define the behavior for our programs.
 
-Elm programs have 3 main pieces.
+Elm programs have 3 central pieces.
 Let's walk through each piece as it appears in the example.
 
 ##### 1. The model
@@ -58,12 +58,15 @@ we probably want to show something different on the screen.
 ---
 
 `main` is where it all comes together.
-`Html.beginnerProgram` is a function that takes a record argument
-and creates an interactive program.
-Elm calls our `update` function anytime an event happens,
-and then it calls `view` to put the new data on the screen
+Here's how Elm uses your functions to run the program:
 
-There's one piece we glossed over: **where do `message` events come from?**
+ 0. Store your initial model
+ 0. Call `view` with your model to get something on the screen
+ 0. Wait for an event to happen
+ 0. Use the event's message to `update` your model
+ 0. Go back to step 2
+
+There's one piece we glossed over: **where do messages and events come from?**
 Well, your answer is just one page away.
 
 > ⭐️ **Try**

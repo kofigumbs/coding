@@ -36,16 +36,19 @@
     - messages
     - what-we-learned
 
-  - title: Making decisions with IF
+  - title: Making decisions
     location: using-if
-    items: []
-    # if-statements
+    items:
+    - true-and-false
+    - if-and-else
+    - in-programs
+    - what-we-learned
 
   - title: Real-world tips
     location: real-world-tips
-    items:
+    items: []
     # intro
-    - function-types
+    # function-types
     # generic-types
     # html-attributes
     # exposing

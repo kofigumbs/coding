@@ -6,18 +6,22 @@ title: What did we learn?
 ### Writing your own functions
 
 ```
-square x = x * x
+square x =
+  x * x
 ```
 
 
 ### Using functions to create programs
 
 ```
-initialModel = 1
+initialModel =
+  1
 
-update message currentModel = currentModel + 1
+update message currentModel =
+  currentModel + 1
 
-view currentModel = Html.text (toString currentModel)
+view currentModel =
+  Html.text (toString currentModel)
 ```
 
 ### Html can generate messages

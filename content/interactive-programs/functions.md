@@ -26,7 +26,7 @@ Excel let's you define custom functions with VBA;
 however, this is meant for advanced users.
 Most of time, people only need to work with the built-in functions.
 
-Elm takes the opposite approach here:
+Elm takes the opposite approach:
 defining your own functions is just as easy as defining your own variables.
 In this example you can see the similarities between
 the **function `square`**, and the variables `four` and `nine`.
