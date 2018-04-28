@@ -35,6 +35,7 @@ end
 task :lessons do
   YAML.load_file(File.join(CONTENT, "_data", "projects.yaml")).each do |project|
     output = File.join BUILD, "lessons"
+    FileUtils.mkdir_p output
     project["lessons"].each do |config|
       data = {
         title: config["title"],
