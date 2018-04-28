@@ -1,13 +1,24 @@
 import 'bulma/css/bulma.css';
-import { Main } from './Main.elm';
+import Elm from './Main.elm';
+import netlifyIdentity from 'netlify-identity-widget';
 import registerServiceWorker from './registerServiceWorker';
 
-Main.embed(document.getElementById('root'), {
+var app = Elm.Main.embed(document.getElementById('root'), {
   api: {
     content: "/content",
     runner: "http://localhost:3001",
-    user: "/user",
   },
+  user: {
+    metadata: netlifyIdentity.currentUser(),
+  },
+});
+
+app.ports.outgoing.subscribe(function(payload) {
+  switch (payload.tag) {
+    case "LOGIN":
+      netlifyIdentity.open();
+      return;
+  }
 });
 
 registerServiceWorker();

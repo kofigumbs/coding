@@ -5,6 +5,7 @@ import Animation.Messenger
 import Dashboard.Page
 import Excelsior
 import Html
+import Js
 import Landing.Page
 import Lesson.Page
 import Navigation

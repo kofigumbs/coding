@@ -61,17 +61,24 @@ getRoadmap context =
 
 withProgress : Excelsior.Context -> List Project -> Task Http.Error Model
 withProgress context roadmap =
-    Http.get (context.api.user ++ "/dashboard")
-        (D.field "project" D.string
-            |> D.andThen (lookup "project" .slug roadmap)
-            |> D.andThen
-                (\project ->
-                    D.field "lesson" D.string
-                        |> D.andThen (lookup "lesson" .slug project.lessons)
-                        |> D.map (Model roadmap project project)
-                )
-        )
-        |> Http.toTask
+    case
+        D.decodeValue
+            (D.field "project" D.string
+                |> D.andThen (lookup "project" .slug roadmap)
+                |> D.andThen
+                    (\project ->
+                        D.field "lesson" D.string
+                            |> D.andThen (lookup "lesson" .slug project.lessons)
+                            |> D.map (Model roadmap project project)
+                    )
+            )
+            context.user.metadata
+    of
+        Ok model ->
+            Task.succeed model
+
+        Err _ ->
+            Debug.crash {- TODO -} ""
 
 
 lookup : String -> (a -> b) -> List a -> b -> D.Decoder a
