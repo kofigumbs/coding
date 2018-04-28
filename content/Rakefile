@@ -1,8 +1,10 @@
 require "json"
 require "yaml"
+require "fileutils"
 
 CONTENT = File.dirname __FILE__
 BUILD = File.join CONTENT, "_build"
+FileUtils.mkdir_p BUILD
 
 def content_data(path)
   YAML.load_file(path).tap do |data|
