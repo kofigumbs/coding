@@ -206,8 +206,8 @@ viewContentLesson isCurrent { title } =
         [ text title ]
 
 
-viewItem : ( Sequence.Context, Item ) -> Html Msg
-viewItem ( context, item ) =
+viewItem : ( Sequence.Placement, Item ) -> Html Msg
+viewItem ( placement, item ) =
     div
         []
         [ h1 [ class "title" ] [ text item.title ]
@@ -221,7 +221,7 @@ viewItem ( context, item ) =
             , next = onClick Next
             , finish = Route.href Route.Dashboard
             }
-            context
+            placement
         ]
 
 

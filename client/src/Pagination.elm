@@ -7,11 +7,11 @@ import Sequence
 
 view :
     { next : Attribute msg, previous : Attribute msg, finish : Attribute msg }
-    -> Sequence.Context
+    -> Sequence.Placement
     -> Html msg
-view { previous, next, finish } context =
+view { previous, next, finish } placement =
     buttons <|
-        case context of
+        case placement of
             Sequence.Alone ->
                 [ leftButton (disabled True), right a "✔ Finish" finish ]
 

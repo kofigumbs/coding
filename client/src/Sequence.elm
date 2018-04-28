@@ -1,4 +1,4 @@
-module Sequence exposing (Context(..), Sequence, current, decoder, edit, mapToList, next, previous)
+module Sequence exposing (Placement(..), Sequence, current, decoder, edit, mapToList, next, previous)
 
 import Json.Decode
 
@@ -22,14 +22,14 @@ decoder =
             )
 
 
-type Context
+type Placement
     = Alone
     | Start
     | Surrounded
     | End
 
 
-current : Sequence a -> ( Context, a )
+current : Sequence a -> ( Placement, a )
 current (Sequence { before, this, after }) =
     if List.isEmpty before && List.isEmpty after then
         ( Alone, this )
