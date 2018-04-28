@@ -1,6 +1,10 @@
-module Excelsior exposing (Context)
+module Excelsior exposing (Context, Error(..))
 
 import Json.Decode exposing (Value)
+
+
+type Error
+    = RequiresAuth
 
 
 type alias Context =

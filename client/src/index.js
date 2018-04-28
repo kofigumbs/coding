@@ -16,6 +16,7 @@ var app = Elm.Main.embed(document.getElementById('root'), {
 app.ports.outgoing.subscribe(function(payload) {
   switch (payload.tag) {
     case "LOGIN":
+      netlifyIdentity.init();
       netlifyIdentity.open();
       return;
   }

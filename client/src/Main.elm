@@ -74,6 +74,7 @@ animate =
 
 type Msg
     = SetRoute (Maybe Route.Route)
+    | Login
     | Loaded Page
     | Transitioned Page
     | Animate Animation.Msg
@@ -87,6 +88,9 @@ update msg model =
     case ( msg, model.page ) of
         ( SetRoute destination, _ ) ->
             goTo destination model
+
+        ( Login, _ ) ->
+            ( model, Js.login )
 
         ( Transitioned page, _ ) ->
             ( { model | page = page, style = queueInitial model }, Cmd.none )
@@ -132,10 +136,10 @@ goTo destination model =
                     Task.perform (Loaded << Landing) (Landing.Page.init model.context)
 
                 Just Route.Dashboard ->
-                    Task.perform (Loaded << Dashboard) (Dashboard.Page.init model.context)
+                    Task.attempt (load Dashboard) (Dashboard.Page.init model.context)
 
                 Just Route.Pricing ->
-                    static Pricing
+                    Task.perform Loaded <| Task.succeed Pricing
 
                 Just (Route.Lesson slug) ->
                     Task.perform (Loaded << Lesson) (Lesson.Page.init model.context slug)
@@ -154,9 +158,14 @@ goTo destination model =
         )
 
 
-static : Page -> Cmd Msg
-static =
-    Task.perform Loaded << Task.succeed
+load : (a -> Page) -> Result Excelsior.Error a -> Msg
+load pageFunction result =
+    case result of
+        Ok page ->
+            Loaded <| pageFunction page
+
+        Err Excelsior.RequiresAuth ->
+            Login
 
 
 view : Model -> Html.Html Msg

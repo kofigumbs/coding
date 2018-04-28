@@ -35,10 +35,11 @@ type Msg
     = Browse Project
 
 
-init : Excelsior.Context -> Task Never Model
+init : Excelsior.Context -> Task Excelsior.Error Model
 init context =
-    Task.andThen (withProgress context) (getRoadmap context)
+    getRoadmap context
         |> Task.onError ({- TODO -} toString >> Debug.crash)
+        |> Task.andThen (withProgress context)
 
 
 getRoadmap : Excelsior.Context -> Task Http.Error (List Project)
@@ -59,7 +60,7 @@ getRoadmap context =
         |> Http.toTask
 
 
-withProgress : Excelsior.Context -> List Project -> Task Http.Error Model
+withProgress : Excelsior.Context -> List Project -> Task Excelsior.Error Model
 withProgress context roadmap =
     case
         D.decodeValue
@@ -77,8 +78,9 @@ withProgress context roadmap =
         Ok model ->
             Task.succeed model
 
-        Err _ ->
-            Debug.crash {- TODO -} ""
+        Err reason ->
+            Task.fail Excelsior.RequiresAuth
+                |> Debug.log reason
 
 
 lookup : String -> (a -> b) -> List a -> b -> D.Decoder a
