@@ -38,7 +38,7 @@ type Msg
 init : Excelsior.Context -> Task Excelsior.Error Model
 init context =
     getRoadmap context
-        |> Task.onError ({- TODO -} toString >> Debug.crash)
+        |> Task.mapError ({- TODO -} toString >> Debug.crash)
         |> Task.andThen (withProgress context)
 
 
