@@ -149,14 +149,14 @@ viewRoadmap browsing roadmap =
         [ class "column is-one-third" ]
         [ aside
             [ class "menu" ]
-            [ p [ class "menu-label" ] [ text "Roadmap" ]
-            , ul [ class "menu-list" ] <| List.map (viewProjectItem browsing) roadmap
+            [ p [ class "menu-label" ] [ text "Projects" ]
+            , ul [ class "menu-list" ] <| List.indexedMap (viewProjectItem browsing) roadmap
             ]
         ]
 
 
-viewProjectItem : Project -> Project -> Html Msg
-viewProjectItem browsing current =
+viewProjectItem : Project -> Int -> Project -> Html Msg
+viewProjectItem browsing index current =
     let
         ( active, children ) =
             if browsing == current then
@@ -169,7 +169,7 @@ viewProjectItem browsing current =
             [ class active
             , onClick <| Browse current
             ]
-            [ text current.title ]
+            [ text <| toString (index + 1) ++ ". " ++ current.title ]
         , children
         ]
 
