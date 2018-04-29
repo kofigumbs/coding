@@ -18,7 +18,7 @@ type alias Model =
 
 init : Excelsior.Context -> Task Never Model
 init context =
-    Http.get (context.api.content ++ "/landing") (D.field "content" Content.decoder)
+    Http.get (context.contentApi ++ "/landing") (D.field "content" Content.decoder)
         |> Http.toTask
         |> Task.map (Model context)
         |> Task.onError ({- TODO -} toString >> Debug.crash)

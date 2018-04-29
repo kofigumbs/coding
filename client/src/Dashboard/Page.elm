@@ -44,7 +44,7 @@ init context =
 
 getRoadmap : Excelsior.Context -> Task Http.Error (List Project)
 getRoadmap context =
-    Http.get (context.api.content ++ "/dashboard")
+    Http.get (context.contentApi ++ "/dashboard")
         (D.field "projects" <|
             D.list <|
                 D.map3 Project
@@ -73,7 +73,7 @@ withProgress context roadmap =
                             |> D.map (Model roadmap project project)
                     )
             )
-            context.user.metadata
+            context.user
     of
         Ok model ->
             Task.succeed model

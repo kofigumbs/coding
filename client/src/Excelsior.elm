@@ -8,6 +8,7 @@ type Error
 
 
 type alias Context =
-    { api : { content : String, runner : String }
-    , user : { metadata : Value }
+    { contentApi : String
+    , runnerApi : String
+    , user : Value
     }

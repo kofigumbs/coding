@@ -67,7 +67,7 @@ type Output
 
 init : Excelsior.Context -> String -> Task Never Model
 init context slug =
-    Http.get (context.api.content ++ "/lessons/" ++ slug)
+    Http.get (context.contentApi ++ "/lessons/" ++ slug)
         (D.map2 (Model context slug (Just Summary))
             (D.field "title" D.string)
             (D.field "items" <|
@@ -142,7 +142,7 @@ setRaw to item =
 compile : Excelsior.Context -> String -> Cmd Msg
 compile context code =
     Http.toTask
-        (Http.post (context.api.runner ++ "/compile")
+        (Http.post (context.runnerApi ++ "/compile")
             (Http.jsonBody <| E.object [ ( "elm", E.string code ) ])
             (D.oneOf
                 [ D.map Html <| D.field "output" D.string

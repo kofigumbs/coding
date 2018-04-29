@@ -6,13 +6,9 @@ import registerServiceWorker from './registerServiceWorker';
 netlifyIdentity.init();
 
 var app = Elm.Main.embed(document.getElementById('root'), {
-  api: {
-    content: "/content",
-    runner: "http://localhost:3001",
-  },
-  user: {
-    metadata: netlifyIdentity.currentUser(),
-  },
+  contentApi: "/content",
+  runnerApi: "http://localhost:3001",
+  user: netlifyIdentity.currentUser(),
 });
 
 app.ports.outgoing.subscribe(function(payload) {
