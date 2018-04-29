@@ -1,4 +1,5 @@
 import 'bulma/css/bulma.css';
+import './main.css';
 import Elm from './Main.elm';
 // import netlifyIdentity from 'netlify-identity-widget';
 import registerServiceWorker from './registerServiceWorker';
