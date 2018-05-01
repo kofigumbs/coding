@@ -3,7 +3,8 @@
     "repository": "gist.github.com/hkgumbs",
     "license": "BSD3",
     "scripts": {
-        "server": "node index.js"
+        "postinstall": "elm-make --yes",
+        "start": "node index.js"
     },
     "dependencies": {
         "body-parser": "^1.18.2",
