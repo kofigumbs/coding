@@ -8,9 +8,9 @@ const getProgress = () => {
 };
 
 const runnerApi =
-  process.env.NODE_ENV === "production"
+  process.env.NODE_ENV === "development"
     ? "https://excel-to-code--runner.herokuapp.com"
-    : "http://localhost:3001"
+    : "http://localhost:3001";
 
 const app = Elm.Main.embed(document.getElementById('root'), {
   contentApi: "/content",
