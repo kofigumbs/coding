@@ -46,9 +46,9 @@
 
   - title: Real-world tips
     location: real-world-tips
-    items: []
-    # intro
-    # function-types
+    items:
+    - intro
+    - function-types
     # generic-types
     # html-attributes
     # exposing
