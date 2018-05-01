@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
+import Js
 import Json.Decode as D
 import Json.Encode as E
 import Lesson.Code exposing (Code)
@@ -57,6 +58,7 @@ type Msg
     | SetOverlay (Maybe Overlay)
     | Compile String
     | CompileResponse Output
+    | Finish
 
 
 type Output
@@ -114,6 +116,14 @@ update msg model =
 
         CompileResponse output ->
             pure { model | overlay = Just <| Runner output }
+
+        Finish ->
+            ( model
+            , Cmd.batch
+                [ Js.saveProgress model.slug
+                , Route.newUrl Route.Dashboard
+                ]
+            )
 
 
 pure : Model -> ( Model, Cmd Msg )
@@ -219,7 +229,7 @@ viewItem ( placement, item ) =
         , Pagination.view
             { previous = onClick Previous
             , next = onClick Next
-            , finish = Route.href Route.Dashboard
+            , finish = onClick Finish
             }
             placement
         ]

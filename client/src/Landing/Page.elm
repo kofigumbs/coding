@@ -43,7 +43,7 @@ startLink : Html msg
 startLink =
     a
         [ class "button is-primary is-large"
-        , Route.href <| Route.Lesson "text-numbers-functions"
+        , Route.href <| Route.Lesson <| .slug Excelsior.lessonOne
         ]
         [ text "Start now" ]
 

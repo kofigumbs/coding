@@ -13,16 +13,16 @@ view { previous, next, finish } placement =
     buttons <|
         case placement of
             Sequence.Alone ->
-                [ leftButton (disabled True), right a "✔ Finish" finish ]
+                [ leftButton (disabled True), rightButton "✔ Finish" finish ]
 
             Sequence.Start ->
-                [ leftButton (disabled True), right button "→ Next" next ]
+                [ leftButton (disabled True), rightButton "→ Next" next ]
 
             Sequence.Surrounded ->
-                [ leftButton previous, right button "→ Next" next ]
+                [ leftButton previous, rightButton "→ Next" next ]
 
             Sequence.End ->
-                [ leftButton previous, right a "✔ Finish" finish ]
+                [ leftButton previous, rightButton "✔ Finish" finish ]
 
 
 leftButton : Attribute msg -> Html msg
@@ -35,13 +35,9 @@ leftButton attr =
         [ strong [] [ text "←" ] ]
 
 
-right :
-    (List (Attribute msg) -> List (Html msg) -> Html msg)
-    -> String
-    -> Attribute msg
-    -> Html msg
-right el name attr =
-    el [ class "button is-primary is-medium", attr ] [ strong [] [ text name ] ]
+rightButton : String -> Attribute msg -> Html msg
+rightButton name attr =
+    button [ class "button is-primary is-medium", attr ] [ strong [] [ text name ] ]
 
 
 buttons : List (Html msg) -> Html msg

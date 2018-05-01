@@ -1,4 +1,4 @@
-module Route exposing (Route(..), fromLocation, href, modifyUrl)
+module Route exposing (Route(..), fromLocation, href, modifyUrl, newUrl)
 
 import Html
 import Html.Attributes
@@ -36,6 +36,11 @@ parser =
 modifyUrl : Route -> Cmd msg
 modifyUrl =
     Navigation.modifyUrl << hash
+
+
+newUrl : Route -> Cmd msg
+newUrl =
+    Navigation.newUrl << hash
 
 
 href : Route -> Html.Attribute msg

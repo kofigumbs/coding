@@ -7,6 +7,7 @@ import Html.Events exposing (..)
 import Http
 import Json.Decode as D
 import Route
+import Set exposing (Set)
 import Task exposing (Task)
 
 
@@ -14,6 +15,7 @@ type alias Model =
     { roadmap : List Project
     , browsing : Project
     , learningPath : Project
+    , progress : Set String
     , upNext : Lesson
     }
 
@@ -64,33 +66,49 @@ withProgress : Excelsior.Context -> List Project -> Task Excelsior.Error Model
 withProgress context roadmap =
     case
         D.decodeValue
-            (D.field "project" D.string
-                |> D.andThen (lookup "project" .slug roadmap)
-                |> D.andThen
-                    (\project ->
-                        D.field "lesson" D.string
-                            |> D.andThen (lookup "lesson" .slug project.lessons)
-                            |> D.map (Model roadmap project project)
-                    )
-            )
+            (D.list D.string |> D.andThen (Set.fromList >> resolve roadmap))
             context.user
     of
         Ok model ->
             Task.succeed model
 
         Err reason ->
-            Task.fail Excelsior.RequiresAuth
-                |> Debug.log reason
+            Debug.crash {- TODO -} ""
 
 
-lookup : String -> (a -> b) -> List a -> b -> D.Decoder a
-lookup tag f haystack needle =
-    case List.filter (f >> (==) needle) haystack of
-        [ target ] ->
-            D.succeed target
+resolve : List Project -> Set String -> D.Decoder Model
+resolve roadmap progress =
+    case ( roadmap, findNext roadmap progress ) of
+        ( project :: _, Nothing ) ->
+            D.succeed <|
+                Model roadmap project project progress Excelsior.lessonOne
 
-        _ ->
-            D.fail <| "no valid " ++ tag
+        ( _, Just ( project, lesson ) ) ->
+            D.succeed <|
+                Model roadmap project project progress lesson
+
+        ( [], Nothing ) ->
+            D.fail "bad project/lesson configuration"
+
+
+findNext : List Project -> Set String -> Maybe ( Project, Lesson )
+findNext projects progress =
+    case projects of
+        [] ->
+            Nothing
+
+        first :: rest ->
+            case
+                List.filter
+                    (\{ slug } -> not <| Set.member slug progress)
+                    first.lessons
+                    |> List.head
+            of
+                Nothing ->
+                    findNext rest progress
+
+                Just lesson ->
+                    Just ( first, lesson )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -104,7 +122,7 @@ view : Model -> Html Msg
 view model =
     div
         []
-        [ viewProgress model.upNext model.learningPath
+        [ viewProgress model.learningPath model.progress
         , div
             [ class "section" ]
             [ div
@@ -119,8 +137,8 @@ view model =
         ]
 
 
-viewProgress : Lesson -> Project -> Html Msg
-viewProgress upNext learningPath =
+viewProgress : Project -> Set String -> Html Msg
+viewProgress learningPath progress =
     div
         [ class "hero is-medium is-primary is-bold" ]
         [ div
@@ -130,7 +148,7 @@ viewProgress upNext learningPath =
                 [ h1
                     [ class "title is-1 has-text-weight-light" ]
                     [ text "You're "
-                    , highlight <| viewPercentage upNext learningPath
+                    , highlight <| viewPercentage learningPath progress
                     , text " through the "
                     , highlight learningPath.title
                     , text " project"
@@ -169,7 +187,9 @@ viewProjectItem browsing index current =
             [ class active
             , onClick <| Browse current
             ]
-            [ text <| toString (index + 1) ++ ". " ++ current.title ]
+            [ strong [] [ text <| toString (index + 1) ++ ". " ]
+            , text current.title
+            ]
         , children
         ]
 
@@ -207,15 +227,11 @@ viewLesson { title, slug } =
         ]
 
 
-viewPercentage : Lesson -> Project -> String
-viewPercentage upNext learningPath =
+viewPercentage : Project -> Set String -> String
+viewPercentage learningPath progress =
     let
         finished =
-            List.indexedMap (,) learningPath.lessons
-                |> List.filter (Tuple.second >> (==) upNext)
-                |> List.head
-                |> Maybe.map Tuple.first
-                |> Maybe.withDefault 0
+            Set.size progress
 
         total =
             List.length learningPath.lessons

@@ -5,6 +5,8 @@ import Animation.Messenger
 import Dashboard.Page
 import Excelsior
 import Html
+import Js
+import Json.Decode exposing (Value)
 import Landing.Page
 import Lesson.Page
 import Navigation
@@ -72,8 +74,8 @@ animate =
 
 
 type Msg
-    = SetRoute (Maybe Route.Route)
-    | Login
+    = NewUser (Maybe Value)
+    | SetRoute (Maybe Route.Route)
     | Loaded Page
     | Transitioned Page
     | Animate Animation.Msg
@@ -83,13 +85,13 @@ type Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg ({ context } as model) =
     case ( msg, model.page ) of
+        ( NewUser (Just user), _ ) ->
+            ( { model | context = { context | user = user } }, Cmd.none )
+
         ( SetRoute destination, _ ) ->
             goTo destination model
-
-        ( Login, _ ) ->
-            ( model, Debug.crash {- TODO -} "" )
 
         ( Transitioned page, _ ) ->
             ( { model | page = page, style = queueInitial model }, Cmd.none )
@@ -163,8 +165,8 @@ load pageFunction result =
         Ok page ->
             Loaded <| pageFunction page
 
-        Err Excelsior.RequiresAuth ->
-            Login
+        Err _ ->
+            Debug.crash {- TODO -} ""
 
 
 view : Model -> Html.Html Msg
@@ -199,7 +201,10 @@ viewPage page =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Animation.subscription Animate [ model.style ]
+    Sub.batch
+        [ Animation.subscription Animate [ model.style ]
+        , Js.newUser NewUser
+        ]
 
 
 main : Program Excelsior.Context Model Msg

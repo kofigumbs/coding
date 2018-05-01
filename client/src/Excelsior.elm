@@ -1,10 +1,10 @@
-module Excelsior exposing (Context, Error(..))
+module Excelsior exposing (Context, Error(..), lessonOne)
 
 import Json.Decode exposing (Value)
 
 
 type Error
-    = RequiresAuth
+    = Fatal
 
 
 type alias Context =
@@ -12,3 +12,8 @@ type alias Context =
     , runnerApi : String
     , user : Value
     }
+
+
+lessonOne : { title : String, slug : String }
+lessonOne =
+    { title = "Text, numbers, and functions", slug = "text-numbers-functions" }
