@@ -8,7 +8,6 @@
   "dependencies": {
     "bulma": "^0.7.0",
     "create-elm-app": "^1.10.4",
-    "elm": "^0.18.0",
-    "gotrue-js": "^0.9.20"
+    "elm": "^0.18.0"
   }
 }

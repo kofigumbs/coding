@@ -5,7 +5,6 @@ import Animation.Messenger
 import Dashboard.Page
 import Excelsior
 import Html
-import Js
 import Landing.Page
 import Lesson.Page
 import Navigation
@@ -90,7 +89,7 @@ update msg model =
             goTo destination model
 
         ( Login, _ ) ->
-            ( model, Js.login )
+            ( model, Debug.crash {- TODO -} "" )
 
         ( Transitioned page, _ ) ->
             ( { model | page = page, style = queueInitial model }, Cmd.none )
