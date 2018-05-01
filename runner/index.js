@@ -1,16 +1,13 @@
-// https://stackoverflow.com/questions/19336435/restart-node-js-application-when-uncaught-exception-occurs
+const app = require("express")();
+const cors = require('cors')
+const bodyParser = require("body-parser");
+const worker = require("./worker");
 
-const cluster = require("cluster");
+app.use(cors());
+app.use(bodyParser.json());
+app.post("/compile", async (request, response) => {
+  await worker.handler(request.body, data => response.send(data));
+});
 
-if (cluster.isMaster) {
-  cluster.fork();
-  cluster.on("exit", function(worker, code, signal) {
-    console.log(`Worker ${worker.id} died.\nRestarting...`)
-    cluster.fork();
-  });
-}
-
-
-// RUN SERVER WORKER
-
-cluster.isWorker && require("./worker");
+const port = process.env["PORT"] || 3001;
+app.listen(port, () => console.log(`Listening on port ${port}...`));
