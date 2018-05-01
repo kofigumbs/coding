@@ -8,7 +8,7 @@ const getProgress = () => {
 };
 
 const runnerApi =
-  process.env.NODE_ENV === "development"
+  process.env.NODE_ENV === "production"
     ? "https://excel-to-code--runner.herokuapp.com"
     : "http://localhost:3001";
 
