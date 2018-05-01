@@ -231,7 +231,9 @@ viewPercentage : Project -> Set String -> String
 viewPercentage learningPath progress =
     let
         finished =
-            Set.size progress
+            learningPath.lessons
+                |> List.filter (\{ slug } -> Set.member slug progress)
+                |> List.length
 
         total =
             List.length learningPath.lessons
