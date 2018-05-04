@@ -13,17 +13,13 @@ code: |-
       , Html.text good.suffix
       ]
 ---
-**Everything in a _list_ must have the same type.** This is probably different from what you're used to in Excel. This difference ultimately gives us helpful error messages. So long, `#N/A`! 
+**Everything in a _list_ must have the same type.** This is probably different from what you're used to in Excel. This difference ultimately gives us helpful error messages. So long, `#N/A`!
 
-**If there are different types, however, we can write a _record_.** Records specify types (e.g., String, number) for each value (e.g., 7, "Eleven"). With this added layer of specificity, records allow the use of more than one type! 
+**If there are different types, however, we can write a _record_.** Records specify types (e.g., String) for each value (e.g., "Eleven"). With this added layer of specificity, records allow the use of more than one type!
 
-We write records with curly braces, where each **_field _**has a name (e.g., prefix) and a type (e.g., number).    
+We use: `:` to annotate a field's type, `=` to define the value in the field and curly braces to communicate that we are using a **_record_** rather than a **_list._** 
 
-* In a **record type**, we use `:` to annotate the type of each field.
-* In a **record value**, we use `=` to define the value in each field.
-
-In order to **get something out of a record** we say `record.field`.
-So the Html in this example uses the record called `good` to show the name of a store.
+In order to **enable functionality for a record** we say `record.field`. In this example, Html uses the record called `good` to show the name of a convenience store.
 
 > ⭐️ **Try**
 >
