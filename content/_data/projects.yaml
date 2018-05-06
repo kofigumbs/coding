@@ -20,8 +20,8 @@
     - syntax-errors
     - what-we-learned
 
-  - title: Rows and columns
-    location: rows-and-columns
+  - title: Working with groups
+    location: working-with-groups
     items:
     - grouping-values
     - showing-multiple-things
