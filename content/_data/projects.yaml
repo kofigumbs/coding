@@ -48,10 +48,11 @@
     location: real-world-tips
     items:
     - intro
+    - exposing
     - function-types
-    # generic-types
-    # html-attributes
-    # exposing
+    - html-type
+    - type-hints
+    - what-we-learned
 
 - title: Guessing Game
   slug: guessing-game

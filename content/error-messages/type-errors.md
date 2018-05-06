@@ -10,7 +10,7 @@ code: |
 
 ---
 
-Elm knows all all of the types in our program,
+Elm knows all of the types in our program,
 so it checks that everything matches up before it puts anything on the screen.
 Also, Elm's error messages are state-of-the-art,
 so you'll never see `#N/A __TODO__`.

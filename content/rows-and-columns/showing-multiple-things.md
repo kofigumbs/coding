@@ -24,7 +24,7 @@ The second list contains other Html values that you want to show inside the div.
 
 Finally, notice how we can spread out our list across multiple lines.
 This is just to make things easier to read:
-it has no affect how Elm understands the code.
+it has no effect how Elm understands the code.
 
 > ⭐️ **Try** add another entry to the List,
 > so that the program says "Hello my friend!".
