@@ -36,7 +36,7 @@
     - messages
     - what-we-learned
 
-  - title: Making decisions
+  - title: Making decisions with IF
     location: using-if
     items:
     - true-and-false
@@ -51,7 +51,7 @@
     - exposing
     - function-types
     - html-type
-    - type-hints
+    - discovering-types
     - what-we-learned
 
 - title: Guessing Game

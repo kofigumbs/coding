@@ -27,8 +27,14 @@ Here's how that plays out in our example:
  - `plusButton` is a **`Html` that can produce `String` messages**
  - `resetButton` is a **`Html` that can produce `number` messages**
 
+`Html String` is the first type we've used that is multiple words long.
+Types like this are called **generic types**.
+It's incomplete to _just_ call something a Html —
+it's always a Html _that can produce_ values of another type, like String.
+In practice, people shorten that description to "an Html _of_ String".
+
 > ⭐️ **Try**
 >
 >  * Predict what will appear when you run the code
 >  * Run the code _as-is_
->  * What did you learn?
+>  * Fix any errors
