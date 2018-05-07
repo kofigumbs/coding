@@ -54,13 +54,16 @@
     - discovering-types
     - what-we-learned
 
-- title: Guessing Game
-  slug: guessing-game
-  lessons: []
-
 - title: To-Do List
   slug: todo
-  lessons: []
+  lessons:
+  - title: Adding style to your website
+    location: adding-style
+    items:
+    - css-and-bulma
+    - counter-buttons
+    - todo-layout
+    - what-we-learned
 
 - title: Mini-Excel Spreadsheet
   slug: spreadsheet

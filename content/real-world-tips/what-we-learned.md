@@ -38,12 +38,13 @@ x =
 ```
 -- TYPE MISMATCH - 
 
-The definition of `x` does not match its type annotation.
+The definition of `z` does not match its type annotation.
 
-3| x : String
-4|>x = [ 1, 2, 3 ]
+3| z : String
+4| z =
+5|>  [ 1, 2, 3 ]
 
-The type annotation for `x` says it is a:
+The type annotation for `z` says it is a:
 
     String
 
