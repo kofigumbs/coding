@@ -11,7 +11,7 @@ code: |-
     |]
 ---
 We can also use Lists to put multiple things on the screen.
-There is a function in `Html` called `**div**` (meaning section or "division"),
+There is a function in `Html` called `div` (meaning section or "division"),
 which let's you group multiple Html values.
 `div` is the first function we've seen that takes **two inputs**.
 Both inputs are Lists.

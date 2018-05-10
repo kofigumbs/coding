@@ -13,7 +13,7 @@ title: What did we learn?
         , Html.text " friend!"
         ]
 
-### Records can group different types
+### Records can group different types of values
 
     good : { oneThing : number, anotherThing : String }
     good =
