@@ -1,29 +1,23 @@
 ---
 title: What did we learn?
-
 ---
-
 ### Bool's are either True or False
 
-```
-isWeakPassword : Bool
-isWeakPassword = password == "Password123!"
-```
+    isWeakPassword : Bool
+    isWeakPassword = password == "Password123!"
+    
+    Returns: FALSE
 
 ### 3 parts to an `if`/`then`/`else`
 
-```
-notification : String
-notification =
-  if isWeakPassword then "That's too weak!" else "Nice!"
-```
+    notification : String
+    notification =
+      if isWeakPassword then "That's too weak!" else "Nice!"
 
 ### Use `if` inside of `update` to make decisions
 
-```
-update message currentModel =
-  if message == "Increment" then
-    currentModel + 1
-  else
-    currentModel - 1
-```
+    update message currentModel =
+      if message == "Increment" then
+        currentModel + 1
+      else
+        currentModel - 1
