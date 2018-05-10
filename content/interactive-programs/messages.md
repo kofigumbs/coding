@@ -32,19 +32,18 @@ In this example, we are going to respond to **clicks**.
 `Html.Events` is a file that has functions for web page events.
 Once we import it, we can use the function `onClick` to make our Html interactive.
 `onClick` takes one argument, which is a **message**.
-Now, whenever that Html is clicked, Elm will use that value to call your **update**.
+Now, whenever `+` is clicked, Elm will use `"Increment"` as the first argument to `update`.
 That's why we call it a "message" —
 it's how your view **communicates** with your data model.
+Whatever your `update` function returns is the new source of truth.
 
 Let's look again at the steps Elm takes to run your program:
 
  0. Store your initial model
  0. Call `view` with your model to get something on the screen
- 0. Wait for an event's message to happen
- 0. Use the event to `update` your model
+ 0. Wait for an event to happen
+ 0. Use the event's message to `update` your model
  0. Go back to step 2
-
-In this example, the event is a click, and the message will be `"Increment"`.
 
 > ⭐️ **Try**
 > 

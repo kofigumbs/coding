@@ -38,7 +38,7 @@ Since our data model is a `number`, we'll start it at 1.
 
 `update` defines how your model changes in the program.
 It is a **function that takes two arguments**.
-We'll skip over the first one for a moment.
+We'll cover this on the next page.
 
 The second argument is the most recent version of your model.
 `update` always returns a model, which is... an _updated_ version of your data.
@@ -46,10 +46,8 @@ In this simple example, we are always updating the data to be 2.
 
 ##### 3. The view function
 
-`view` tells Elm **how to show your model on the screen**.
-This function should look familiar to you, since it always returns Html.
-`view` is a function because anytime we update our data model,
-we probably want to show something different on the screen.
+`view` turns your data model into Html, in order to show something on the screen.
+We'll come back to this one on the next page as well.
 
 ---
 

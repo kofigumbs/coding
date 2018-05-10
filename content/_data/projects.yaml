@@ -32,6 +32,7 @@
     location: interactive-programs
     items:
     - functions
+    - semantic-functions
     - writing-programs
     - messages
     - what-we-learned

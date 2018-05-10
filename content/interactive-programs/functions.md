@@ -3,30 +3,34 @@ title: Creating your own functions
 code: |-
   import Html
 
-  [focus|square x =
-    x * x|]
+  [focus|f(x) = x + 5|]
 
-  four : number
-  four =
-    [focus|square 2|]
-
-  nine : number
-  nine =
-    [focus|square 3|]
+  result : number
+  result = [focus|f(1)|]
 
   main =
-    Html.div []
-      [ Html.text (toString four)
-      , Html.text (toString nine)
-      ]
+    Html.text (toString result)
+
 ---
-Excel lets you define custom functions with VBA; however, this is meant for advanced users. Most of the time, people only need to work with the built-in functions.
 
-Elm takes the opposite approach: defining your own functions is just as easy as defining your own variables. In this example you can see the similarities between the variables `four` and `nine`, the **function** `**square**`. In fact there is only one difference: **functions take arguments**. Arguments can be used inside a function to change its behavior.
+Functions in Elm are just like functions in Algebra!
+In fact, we can write them with almost the same syntax.
+The line `f(x) = x + 5` creates a brand new function, with the following properties:
 
-Finally, notice that calling a custom function
-is exactly the same as calling a built-in function.
+ - A **name** — this function is called `f`
+ - **Arguments** — this function has one argument, named `x`
+ - The **body** — anything that comes after the `=` sign
+
+Notice how **we can use arguments inside the body** of the function.
+When we use our function, like `f(1)`, the number 1 is then substituted for `x` in the function body.
+This means that each of these lines have the same result:
+
+    f(1)
+    1 + 5
+    6
+
+So `f` just adds 5 to whatever number you provide.
 
 > ⭐️ **Try**
-> 0\. Create a new function called `plusOne` that adds 1 to its argument
-> 0\. Make sure you test your function by using it to get something on the screen
+>  1. Create a new function (e.g. `g(y)`) that doubles argument
+>  2. Make sure you test your function by using it to get something on the screen
