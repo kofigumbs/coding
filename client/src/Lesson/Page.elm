@@ -314,7 +314,8 @@ viewRunnerHtml html =
     modalCard
         [ div
             [ class "modal-card-body" ]
-            [ iframe [ srcdoc html, sandbox "allow-scripts" ] [] ]
+            [ iframe [ srcdoc html, sandbox "allow-scripts", class "full" ] []
+            ]
         ]
 
 
