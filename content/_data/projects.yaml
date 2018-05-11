@@ -58,13 +58,21 @@
 - title: To-Do List
   slug: todo
   lessons:
-  - title: Adding style to your website
-    location: adding-style
+  - title: Iterating over Lists
+    location: iterating-over-lists
     items:
-    - css-and-bulma
-    - counter-buttons
-    - todo-layout
-    - what-we-learned
+    - transforming
+    # prepending
+    # multiple-counters
+    # what-we-learned
+
+# - title: Adding style to your website
+#   location: adding-style
+#   items:
+#   - css-and-bulma
+#   - counter-buttons
+#   - todo-layout
+#   - what-we-learned
 
 - title: Mini-Excel Spreadsheet
   slug: spreadsheet
