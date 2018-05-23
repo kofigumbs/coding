@@ -3,15 +3,15 @@ title: True and False
 code: |-
   import Html
 
-  boolA : [focus|Bool|]
-  boolA = "Left" [focus|==|] "Right"
+  bool : [focus|Bool|]
+  bool = "Left" [focus|==|] "Right"
 
   main =
     Html.div []
-      [ Html.text (toString bool1)
+      [ Html.text (toString bool)
       ]
 ---
-Often in programming, we need to ask "yes or no" questions.
+**Often in programming, we need to ask "yes or no" questions.**
 For instance, we might want to know "are these two values equal?"
 This idea is built into Elm – we call it the `Bool` type (short for "boolean"). A Bool can return one of two results, and those results are either `True` or `False`.
 
