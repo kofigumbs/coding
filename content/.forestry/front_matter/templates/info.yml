@@ -1,6 +1,4 @@
 ---
-pages:
-- landing.md
 hide_body: false
 is_partial: false
 fields:
@@ -10,3 +8,5 @@ fields:
   description: Admin only
   config:
     required: true
+pages:
+- landing.md

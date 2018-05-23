@@ -29,9 +29,9 @@ Welcome back to the world of interactive programs!
 Now that we know how to make decisions with `if`/`then`/`else`,
 we can build more interesting programs.
 
-The code in this example _should_ let you _increase and decrease_ the number on the screen. However, the code shown on the left is broken, because it is not operating as intended. 
+The code in this example _should_ let you _increase and decrease_ the number on the screen. However, the code shown on the left is broken, because it is not operating as intended.
 
-We'll want to change the `message` to "increment" or "decrement." **By using the proper message**, `view` and `update` will be enabled to properly communicate with the data model (e.g., initialModel).
+In this example, `Increment` and `Decrement` both need to get "plugged in" as a message inside of update. This model will be fixed when the message is being properly referenced.
 
 > ⭐️ **Try**
 >
