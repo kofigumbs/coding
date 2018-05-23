@@ -38,7 +38,7 @@ Since our data model is a `number`, we'll start it at 1.
 
 `update` defines how your model changes in the program.
 It is a **function that takes two arguments**.
-We'll cover this on the next page.
+We'll skip over the first one for a moment.
 
 The second argument is the most recent version of your model.
 `update` always returns a model, which is... an _updated_ version of your data.
@@ -46,19 +46,22 @@ In this simple example, we are always updating the data to be 2.
 
 ##### 3. The view function
 
-`view` turns your data model into Html, in order to show something on the screen.
-We'll come back to this one on the next page as well.
+`view` tells Elm **how to show your model on the screen**.
+This function should look familiar to you, since it always returns Html.
+`view` is a function because anytime we update our data model,
+we probably want to show something different on the screen.
 
 ---
 
-`main` is where it all comes together.
-Here's how Elm uses your functions to run the program:
+`main` is where it all comes together. Here's how Elm uses your functions to run the program:
 
 1. Store your initial model
-2. Call `view` with your model to get something on the screen
+2. Run `view` with your model to get something on the screen
 3. Wait for an event to happen
 4. Use the event's message to `update` your model
 5. Go back to step 2
+
+As a result of this continuous process, `main` is always storing your most recent model. 
 
 There's one piece we glossed over: **where do messages and events come from?**
 Well, your answer is just one page away.
