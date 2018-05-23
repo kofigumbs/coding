@@ -3,10 +3,8 @@ title: What did we learn?
 ---
 ### Bool's are either True or False
 
-    isWeakPassword : Bool
-    isWeakPassword = password == "Password123!"
-    
-    Returns: FALSE
+    boolA : Bool
+    boolA = "Left" == "Right"
 
 ### 3 parts to an `if`/`then`/`else`
 
