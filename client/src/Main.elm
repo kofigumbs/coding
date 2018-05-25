@@ -71,19 +71,13 @@ update msg ({ context } as model) =
                 |> Tuple.mapFirst (\new -> { model | transition = new })
 
         ( DashboardMsg pageMsg, Dashboard pageModel ) ->
-            Dashboard.Page.update pageMsg pageModel
-                |> Tuple.mapFirst (\new -> { model | page = Dashboard new })
-                |> Tuple.mapSecond (Cmd.map DashboardMsg)
+            mapPage Dashboard DashboardMsg model <| Dashboard.Page.update pageMsg pageModel
 
         ( LessonMsg pageMsg, Lesson pageModel ) ->
-            Lesson.Page.update pageMsg pageModel
-                |> Tuple.mapFirst (\new -> { model | page = Lesson new })
-                |> Tuple.mapSecond (Cmd.map LessonMsg)
+            mapPage Lesson LessonMsg model <| Lesson.Page.update pageMsg pageModel
 
         ( ReviewMsg pageMsg, Review pageModel ) ->
-            Review.Page.update pageMsg pageModel
-                |> Tuple.mapFirst (\new -> { model | page = Review new })
-                |> Tuple.mapSecond (Cmd.map ReviewMsg)
+            mapPage Review ReviewMsg model <| Review.Page.update pageMsg pageModel
 
         ( _, _ ) ->
             ( model, Cmd.none )
@@ -125,6 +119,11 @@ load pageFunction result =
 
         Err _ ->
             Debug.crash {- TODO -} ""
+
+
+mapPage : (a -> Page) -> (msg -> Msg) -> Model -> ( a, Cmd msg ) -> ( Model, Cmd Msg )
+mapPage toPage toMsg model ( pageModel, pageCmds ) =
+    ( { model | page = toPage pageModel }, Cmd.map toMsg pageCmds )
 
 
 view : Model -> Html.Html Msg
