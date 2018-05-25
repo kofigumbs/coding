@@ -1,4 +1,4 @@
-module Excelsior exposing (Context, Error(..), lessonOne)
+module Global exposing (Context, Error(..), lessonOne)
 
 import Json.Decode exposing (Value)
 

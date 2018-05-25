@@ -3,7 +3,7 @@ module Main exposing (..)
 import Animation
 import Animation.Messenger
 import Dashboard.Page
-import Excelsior
+import Global
 import Html
 import Js
 import Json.Decode exposing (Value)
@@ -17,7 +17,7 @@ import Task
 type alias Model =
     { page : Page
     , style : Animation.Messenger.State Msg
-    , context : Excelsior.Context
+    , context : Global.Context
     }
 
 
@@ -29,7 +29,7 @@ type Page
     | Review Review.Page.Model
 
 
-init : Excelsior.Context -> Navigation.Location -> ( Model, Cmd Msg )
+init : Global.Context -> Navigation.Location -> ( Model, Cmd Msg )
 init context location =
     goTo (Route.fromLocation location)
         { page = Blank
@@ -152,7 +152,7 @@ goTo destination model =
         )
 
 
-load : (a -> Page) -> Result Excelsior.Error a -> Msg
+load : (a -> Page) -> Result Global.Error a -> Msg
 load pageFunction result =
     case result of
         Ok page ->
@@ -194,7 +194,7 @@ subscriptions model =
         ]
 
 
-main : Program Excelsior.Context Model Msg
+main : Program Global.Context Model Msg
 main =
     Navigation.programWithFlags
         (Route.fromLocation >> SetRoute)

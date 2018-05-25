@@ -1,6 +1,6 @@
 module Dashboard.Page exposing (Model, Msg, init, update, view)
 
-import Excelsior
+import Global
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -37,14 +37,14 @@ type Msg
     = Browse Project
 
 
-init : Excelsior.Context -> Task Excelsior.Error Model
+init : Global.Context -> Task Global.Error Model
 init context =
     getRoadmap context
         |> Task.mapError ({- TODO -} toString >> Debug.crash)
         |> Task.andThen (withProgress context)
 
 
-getRoadmap : Excelsior.Context -> Task Http.Error (List Project)
+getRoadmap : Global.Context -> Task Http.Error (List Project)
 getRoadmap context =
     Http.get (context.contentApi ++ "/dashboard")
         (D.field "projects" <|
@@ -62,7 +62,7 @@ getRoadmap context =
         |> Http.toTask
 
 
-withProgress : Excelsior.Context -> List Project -> Task Excelsior.Error Model
+withProgress : Global.Context -> List Project -> Task Global.Error Model
 withProgress context roadmap =
     case
         D.decodeValue
@@ -81,7 +81,7 @@ resolve roadmap progress =
     case ( roadmap, findNext roadmap progress ) of
         ( project :: _, Nothing ) ->
             D.succeed <|
-                Model roadmap project project progress Excelsior.lessonOne
+                Model roadmap project project progress Global.lessonOne
 
         ( _, Just ( project, lesson ) ) ->
             D.succeed <|

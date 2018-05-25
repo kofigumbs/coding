@@ -1,7 +1,7 @@
 module Lesson.Page exposing (Model, Msg, init, update, view)
 
 import Content exposing (Content)
-import Excelsior
+import Global
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -19,7 +19,7 @@ import Task exposing (Task)
 
 
 type alias Model =
-    { context : Excelsior.Context
+    { context : Global.Context
     , slug : String
     , overlay : Maybe Overlay
 
@@ -67,7 +67,7 @@ type Output
     | Unknown
 
 
-init : Excelsior.Context -> String -> Task Never Model
+init : Global.Context -> String -> Task Never Model
 init context slug =
     Http.get (context.contentApi ++ "/lessons/" ++ slug)
         (D.map2 (Model context slug (Just Summary))
@@ -149,7 +149,7 @@ setRaw to item =
     { item | editor = Maybe.map transform item.editor }
 
 
-compile : Excelsior.Context -> String -> Cmd Msg
+compile : Global.Context -> String -> Cmd Msg
 compile context code =
     Http.toTask
         (Http.post (context.runnerApi ++ "/compile")
