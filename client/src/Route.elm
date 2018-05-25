@@ -7,8 +7,7 @@ import UrlParser exposing (..)
 
 
 type Route
-    = Root
-    | Dashboard
+    = Dashboard
     | Lesson String
     | Review String
 
@@ -16,7 +15,7 @@ type Route
 fromLocation : Location -> Maybe Route
 fromLocation location =
     if String.isEmpty location.hash then
-        Just Root
+        Nothing
     else
         parseHash parser location
 
@@ -24,8 +23,7 @@ fromLocation location =
 parser : Parser (Route -> a) a
 parser =
     oneOf
-        [ map Root top
-        , map Dashboard <| s "dashboard"
+        [ map Dashboard <| s "dashboard"
         , map Lesson <| s "lesson" </> string
         , map Review <| s "review" </> string
         ]
@@ -49,9 +47,6 @@ href =
 hash : Route -> String
 hash route =
     case route of
-        Root ->
-            "#/"
-
         Dashboard ->
             "#/dashboard"
 

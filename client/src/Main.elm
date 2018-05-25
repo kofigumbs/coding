@@ -127,9 +127,6 @@ goTo destination model =
         cmd =
             case destination of
                 Nothing ->
-                    Route.modifyUrl Route.Root
-
-                Just Route.Root ->
                     Route.modifyUrl Route.Dashboard
 
                 Just Route.Dashboard ->

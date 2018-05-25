@@ -1,7 +1,7 @@
 module Review.Page exposing (Model, Msg, init, update, view)
 
 import Content exposing (Content)
-import Excelsior
+import Global
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -105,7 +105,7 @@ type Msg
     | Select Option
 
 
-init : Excelsior.Context -> String -> Task Never Model
+init : Global.Context -> String -> Task Never Model
 init context slug =
     case D.decodeString (D.field "questions" <| Sequence.decoder question) json of
         Ok questions ->
