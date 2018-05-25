@@ -7,10 +7,8 @@ import Excelsior
 import Html
 import Js
 import Json.Decode exposing (Value)
-import Landing.Page
 import Lesson.Page
 import Navigation
-import Pricing.Page
 import Review.Page
 import Route
 import Task
@@ -26,9 +24,7 @@ type alias Model =
 type Page
     = Blank
     | Transitioning { from : Page }
-    | Landing Landing.Page.Model
     | Dashboard Dashboard.Page.Model
-    | Pricing
     | Lesson Lesson.Page.Model
     | Review Review.Page.Model
 
@@ -134,13 +130,10 @@ goTo destination model =
                     Route.modifyUrl Route.Root
 
                 Just Route.Root ->
-                    Task.perform (Loaded << Landing) (Landing.Page.init model.context)
+                    Route.modifyUrl Route.Dashboard
 
                 Just Route.Dashboard ->
                     Task.attempt (load Dashboard) (Dashboard.Page.init model.context)
-
-                Just Route.Pricing ->
-                    Task.perform Loaded <| Task.succeed Pricing
 
                 Just (Route.Lesson slug) ->
                     Task.perform (Loaded << Lesson) (Lesson.Page.init model.context slug)
@@ -180,14 +173,8 @@ viewPage page =
         Blank ->
             Html.text ""
 
-        Landing model ->
-            Landing.Page.view model
-
         Dashboard model ->
             Html.map DashboardMsg <| Dashboard.Page.view model
-
-        Pricing ->
-            Pricing.Page.view
 
         Lesson model ->
             Html.map LessonMsg <| Lesson.Page.view model

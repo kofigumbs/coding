@@ -9,7 +9,6 @@ import UrlParser exposing (..)
 type Route
     = Root
     | Dashboard
-    | Pricing
     | Lesson String
     | Review String
 
@@ -27,7 +26,6 @@ parser =
     oneOf
         [ map Root top
         , map Dashboard <| s "dashboard"
-        , map Pricing <| s "pricing"
         , map Lesson <| s "lesson" </> string
         , map Review <| s "review" </> string
         ]
@@ -56,9 +54,6 @@ hash route =
 
         Dashboard ->
             "#/dashboard"
-
-        Pricing ->
-            "#/pricing"
 
         Lesson code ->
             "#/lesson/" ++ code
