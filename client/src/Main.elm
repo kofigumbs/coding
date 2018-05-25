@@ -1,7 +1,5 @@
 module Main exposing (..)
 
-import Animation
-import Animation.Messenger
 import Dashboard.Page
 import Global
 import Html
@@ -12,11 +10,12 @@ import Navigation
 import Review.Page
 import Route
 import Task
+import Transition
 
 
 type alias Model =
     { page : Page
-    , style : Animation.Messenger.State Msg
+    , transition : Transition.State Msg
     , context : Global.Context
     }
 
@@ -33,40 +32,9 @@ init : Global.Context -> Navigation.Location -> ( Model, Cmd Msg )
 init context location =
     goTo (Route.fromLocation location)
         { page = Blank
-        , style = Animation.style properties.initial
+        , transition = Transition.initial
         , context = context
         }
-
-
-properties :
-    { initial : List Animation.Property
-    , loading : List Animation.Property
-    }
-properties =
-    { initial =
-        [ Animation.opacity 1.0
-        , Animation.translate (Animation.px 0) (Animation.px 0)
-        ]
-    , loading =
-        [ Animation.opacity 0.0
-        , Animation.translate (Animation.px 0) (Animation.px 25)
-        ]
-    }
-
-
-queueInitial : Model -> Animation.Messenger.State Msg
-queueInitial model =
-    Animation.queue [ animate properties.initial ] model.style
-
-
-queueNext : Page -> Model -> Animation.Messenger.State Msg
-queueNext page model =
-    Animation.queue [ Animation.Messenger.send (Transitioned page) ] model.style
-
-
-animate : List Animation.Property -> Animation.Messenger.Step Msg
-animate =
-    Animation.toWith <| Animation.spring { stiffness = 400, damping = 28 }
 
 
 type Msg
@@ -74,7 +42,7 @@ type Msg
     | SetRoute (Maybe Route.Route)
     | Loaded Page
     | Transitioned Page
-    | Animate Animation.Msg
+    | Animate Transition.Animation
     | DashboardMsg Dashboard.Page.Msg
     | LessonMsg Lesson.Page.Msg
     | ReviewMsg Review.Page.Msg
@@ -90,17 +58,17 @@ update msg ({ context } as model) =
             goTo destination model
 
         ( Transitioned page, _ ) ->
-            ( { model | page = page, style = queueInitial model }, Cmd.none )
+            ( { model | page = page, transition = Transition.queueInitial model.transition }, Cmd.none )
 
         ( Loaded page, Transitioning _ ) ->
-            ( { model | style = queueNext page model }, Cmd.none )
+            ( { model | transition = Transition.queueNext (Transitioned page) model.transition }, Cmd.none )
 
         ( Loaded page, _ ) ->
             ( { model | page = page }, Cmd.none )
 
         ( Animate animMsg, _ ) ->
-            Animation.Messenger.update animMsg model.style
-                |> Tuple.mapFirst (\style -> { model | style = style })
+            Transition.update animMsg model.transition
+                |> Tuple.mapFirst (\new -> { model | transition = new })
 
         ( DashboardMsg pageMsg, Dashboard pageModel ) ->
             Dashboard.Page.update pageMsg pageModel
@@ -143,7 +111,7 @@ goTo destination model =
     else
         ( { model
             | page = Transitioning { from = model.page }
-            , style = Animation.queue [ animate properties.loading ] model.style
+            , transition = Transition.queueLoading model.transition
           }
         , cmd
         )
@@ -161,7 +129,7 @@ load pageFunction result =
 
 view : Model -> Html.Html Msg
 view model =
-    Html.main_ (Animation.render model.style) [ viewPage model.page ]
+    Html.main_ (Transition.render model.transition) [ viewPage model.page ]
 
 
 viewPage : Page -> Html.Html Msg
@@ -186,8 +154,8 @@ viewPage page =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Animation.subscription Animate [ model.style ]
-        , Js.newUser NewUser
+        [ Js.newUser NewUser
+        , Transition.subscription Animate model.transition
         ]
 
 
