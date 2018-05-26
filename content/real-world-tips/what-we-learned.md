@@ -23,12 +23,12 @@ update message currentModel =
 ### Html and List are generic types
 
 ```
-y : Html number
-y =
+x : Html number
+x =
   div [ onClick 0 ] [ text "Reset" ]
 
-x : List number
-x =
+y : List number
+y =
   [ 1, 2, 3 ]
 ```
 

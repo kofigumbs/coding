@@ -3,8 +3,8 @@ title: Discovering new types
 code: |
   import Html
 
-  [focus|x : String|]
-  x =
+  [focus|z : String|]
+  z =
     [ 1, 2, 3 ]
 
   main =
@@ -22,7 +22,7 @@ we can **intentionally make mistakes to get the real answer**.
 In this example, we've _incorrectly_ called `[ 1, 2, 3 ]` a String.
 The error message will teach you how to annotate Lists.
 
-> ⭐️ **Try** fixing the annotation of `x`.
+> ⭐️ **Try** fixing the annotation of `z`.
 >
 > _The fixed annotation should look like another type we discussed.
 > What do we call types that look that?_

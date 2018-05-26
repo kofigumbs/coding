@@ -56,8 +56,8 @@
     items:
     - intro
     - exposing
-    - function-types
     - html-type
+    - function-types
     - discovering-types
     - what-we-learned
 

@@ -14,17 +14,14 @@ code: |
 
 ---
 
-In Elm, **functions are values**, and as we already know: all values have types.
-In Excel, you cannot treat data and functions as the same type of thing.
-Elm does not make that distinction, so functions have types.
+In Elm, **functions are values**, and as we already know, all values have types.
+We use `->` to write function types.
+`plusOne : number -> String` means that "`plusOne` takes a number argument
+and returns a String".
 
 Generally, we write out the types of our functions to describe meaning and intent.
 All type annotations are optional in Elm,
 but if you make a mistake, the error messages are much nicer if you've used them.
-
-We use `->` to write function types.
-`plusOne : number -> String` means that "`plusOne` takes a number argument
-and returns a String".
 
 > ⭐️ **Try** fixing the error in this example.
 >
