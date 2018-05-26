@@ -11,9 +11,11 @@ code: |-
     [focus|plusFive 1|]
 
   main =
-    Html.text (toString result)
+    Html.div []
+      [ Html.text (toString result)
+      ]
 ---
-It is common to write and use custom functions in programming. On the last page, we used an Algebra-like syntax for our functions. However, it's more common to use the following style:
+On the last page, we used an Algebra-like syntax for our functions. However, it's more common to use the following style:
 
 1. Give functions proper names, instead of `f` and `g`
 2. Put the function body on the next line (more important as functions grow)
@@ -21,7 +23,7 @@ It is common to write and use custom functions in programming. On the last page,
 
 Note that **custom and built-in functions are equally important**. In other words, writing functions is an essential part of programming.
 
-In order to **use** functions, **you need two things — the function name then the arguments**:
+In order to **use** functions, you need two things — **the function name then the arguments**:
 
 * Custom — `plusFive 1`
 * Built-in — `toString 456` or `Html.text "Hello"`

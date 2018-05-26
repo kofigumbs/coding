@@ -9,7 +9,8 @@ code: |
 
   main =
     Html.div []
-      [ Html.text (toString (plusOne 5)) ]
+      [ Html.text (toString (plusOne 5))
+      ]
 
 ---
 
