@@ -19,7 +19,7 @@ code: |-
 
 We use a colon to annotate a field's type, an equals sign to define the value in the field, and curly braces to communicate that we are using a **_record_** rather than a **_list_**.
 
-In order to **access a record field** we say `record.field`. This means the code retrieves a specific value (e.g., `prefix`) within a meta value (e.g., `store`). In this example, Html uses the record called `store` to show the name of a convenience store.
+In order to **access a record field** we say `record.field`. This means the code retrieves a specific value (e.g., `prefix`) within the record value (e.g., `store`). In this example, Html uses the record called `store` to show the name of a convenience store.
 
 > ⭐️ **Try**
 >

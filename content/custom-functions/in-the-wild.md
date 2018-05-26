@@ -17,11 +17,11 @@ It is common to write and use custom functions in programming. On the last page,
 
 1. Give functions proper names, instead of `f` and `g`
 2. Put the function body on the next line (more important as functions grow)
-3. Omit the parenthesis, unless required for order of operations
+3. Omit the parenthesis
 
 Note that **custom and built-in functions are equally important**. In other words, writing functions is an essential part of programming.
 
-In order to write functions, **you will always need three things: the function name, a space, then the argument**:
+In order to **use** functions, **you need two things — the function name then the arguments**:
 
 * Custom — `plusFive 1`
 * Built-in — `toString 456` or `Html.text "Hello"`

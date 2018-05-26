@@ -13,8 +13,6 @@ code: |-
 
 ---
 
-Functions in Elm are just like functions in Algebra!
-In fact, we can write them with almost the same syntax.
 The line `f(x) = x + 5` creates a brand new function, with the following properties:
 
  - A **name** — this function is called `f`
@@ -32,5 +30,5 @@ This means that each of these lines have the same result:
 So `f` just adds 5 to whatever number you provide.
 
 > ⭐️ **Try**
->  1. Create a new function (e.g. `g(y)`) that doubles argument
+>  1. Create a new function — `g(y)` — that doubles argument
 >  2. Make sure you test your function by using it to get something on the screen

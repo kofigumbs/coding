@@ -1,7 +1,7 @@
 ---
 title: Welcome
 ---
-Throughout this course we will be learning how to write software for the web (i.e. making websites). We'll use a language called **Elm**. This is an unconventional choice, but here's why we think it's going to be great:
+Throughout this course we will be learning how to make websites. We'll use a language called **Elm**. This is an unconventional choice, but here's why we think it's going to be great:
 
 ### One thing at a time
 
