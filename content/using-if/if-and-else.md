@@ -11,7 +11,9 @@ code: |-
     [focus|if|] guess == 42 [focus|then|] "You got it!" [focus|else|] "Nope."
 
   main =
-    Html.text result
+    Html.div []
+      [ Html.text result ]
+
 ---
 In Excel, you can use the `IF()` function to make decisions.
 Here's an example Excel formula that corresponds to `result` in our example:

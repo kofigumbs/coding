@@ -7,7 +7,9 @@ code: |
   plusOne x =
     x + 1
 
-  main = Html.text (toString (plusOne 5))
+  main =
+    Html.div []
+      [ Html.text (toString (plusOne 5)) ]
 
 ---
 

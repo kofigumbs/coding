@@ -1,5 +1,5 @@
 ---
-title: Writing a program is just writing functions
+title: Model, view, update
 code: |-
   import Html
 

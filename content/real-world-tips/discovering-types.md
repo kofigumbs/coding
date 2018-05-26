@@ -7,7 +7,9 @@ code: |
   x =
     [ 1, 2, 3 ]
 
-  main = Html.text "Nice!"
+  main =
+    Html.div []
+      [ Html.text "Nice!" ]
 
 ---
 

@@ -28,12 +28,18 @@
     - groups-with-names
     - what-we-learned
 
+  - title: Custom functions
+    location: custom-functions
+    items:
+    - defining
+    - semantic
+    - what-we-learned
+
   - title: Interactive programs
     location: interactive-programs
     items:
-    - functions
-    - semantic-functions
-    - writing-programs
+    - programs
+    - model-view-update
     - messages
     - what-we-learned
 
@@ -55,8 +61,8 @@
     - discovering-types
     - what-we-learned
 
-- title: To-Do List
-  slug: todo
+- title: Spreadsheet Editor
+  slug: spreadsheet
   lessons:
   - title: Iterating over Lists
     location: iterating-over-lists
@@ -73,7 +79,3 @@
 #   - counter-buttons
 #   - todo-layout
 #   - what-we-learned
-
-- title: Mini-Excel Spreadsheet
-  slug: spreadsheet
-  lessons: []
