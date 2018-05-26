@@ -67,17 +67,16 @@ update msg ({ context } as model) =
             ( { model | page = page }, Cmd.none )
 
         ( Animate animMsg, _ ) ->
-            Transition.update animMsg model.transition
-                |> Tuple.mapFirst (\new -> { model | transition = new })
+            Transition.update animMsg model.transition |> Tuple.mapFirst (\new -> { model | transition = new })
 
         ( DashboardMsg pageMsg, Dashboard pageModel ) ->
-            mapPage Dashboard DashboardMsg model <| Dashboard.Page.update pageMsg pageModel
+            Dashboard.Page.update pageMsg pageModel |> mapPage Dashboard DashboardMsg model
 
         ( LessonMsg pageMsg, Lesson pageModel ) ->
-            mapPage Lesson LessonMsg model <| Lesson.Page.update pageMsg pageModel
+            Lesson.Page.update pageMsg pageModel |> mapPage Lesson LessonMsg model
 
         ( ReviewMsg pageMsg, Review pageModel ) ->
-            mapPage Review ReviewMsg model <| Review.Page.update pageMsg pageModel
+            Review.Page.update pageMsg pageModel |> mapPage Review ReviewMsg model
 
         ( _, _ ) ->
             ( model, Cmd.none )
@@ -85,30 +84,31 @@ update msg ({ context } as model) =
 
 goTo : Maybe Route.Route -> Model -> ( Model, Cmd Msg )
 goTo destination model =
-    let
-        cmd =
-            case destination of
-                Nothing ->
-                    Route.modifyUrl Route.Dashboard
-
-                Just Route.Dashboard ->
-                    Task.attempt (load Dashboard) (Dashboard.Page.init model.context)
-
-                Just (Route.Lesson slug) ->
-                    Task.perform (Loaded << Lesson) (Lesson.Page.init model.context slug)
-
-                Just (Route.Review slug) ->
-                    Task.perform (Loaded << Review) (Review.Page.init model.context slug)
-    in
     if model.page == Blank then
-        ( model, cmd )
+        ( model, fromDestination model.context destination )
     else
         ( { model
             | page = Transitioning { from = model.page }
             , transition = Transition.queueLoading model.transition
           }
-        , cmd
+        , fromDestination model.context destination
         )
+
+
+fromDestination : Global.Context -> Maybe Route.Route -> Cmd Msg
+fromDestination context destination =
+    case destination of
+        Nothing ->
+            Route.modifyUrl Route.Dashboard
+
+        Just Route.Dashboard ->
+            Task.attempt (load Dashboard) (Dashboard.Page.init context)
+
+        Just (Route.Lesson slug) ->
+            Task.perform (Loaded << Lesson) (Lesson.Page.init context slug)
+
+        Just (Route.Review slug) ->
+            Task.perform (Loaded << Review) (Review.Page.init context slug)
 
 
 load : (a -> Page) -> Result Global.Error a -> Msg
