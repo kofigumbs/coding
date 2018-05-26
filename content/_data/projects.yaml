@@ -39,8 +39,8 @@
     location: interactive-programs
     items:
     - programs
-    - model-view-update
-    - messages
+    - model-view
+    - update
     - what-we-learned
 
   - title: Making decisions with IF

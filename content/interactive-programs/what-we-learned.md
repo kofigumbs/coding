@@ -1,25 +1,31 @@
 ---
 title: What did we learn?
+
 ---
-### Writing your own functions
 
-    f x =
-      x + 2
+### How programs work
 
-### Using functions to create programs
+    ┌─────┐
+    │     ↓
+    │    MODEL  -- data in your program
+    │     ↓
+    │    VIEW   -- turn your data into Html
+    │     ↓
+    │    UPDATE -- do something when the user clicks
+    └─────┘
 
-    initialModel =
-      1
-    
-    update message currentModel =
-      currentModel + 1
-    
-    view currentModel =
-      Html.text (toString currentModel)
 
-### Html can trigger your update functions
+### Wait for events in `view`
+
+    import Html.Events
 
     view currentModel =
       Html.div
-        [ Html.Events.onClick "Increment" ]
+        [ Html.Events.onClick 1 ]
         [ Html.text (toString currentModel) ]
+
+
+### Change your model in `update`
+
+    update message currentModel =
+      message + currentModel
