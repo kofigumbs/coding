@@ -23,7 +23,7 @@ code: |-
 Welcome to your first Elm program!
 So far, we've just been generating Html in `main`,
 but now that we know about functions, we can do much more.
-Functions let us define the behavior for our programs.
+Functions let us define the behavior of our programs.
 
 Elm programs have 3 central pieces.
 Let's walk through each piece as it appears in the example.

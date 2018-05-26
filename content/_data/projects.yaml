@@ -31,8 +31,8 @@
   - title: Custom functions
     location: custom-functions
     items:
-    - defining
-    - semantic
+    - creating
+    - in-the-wild
     - what-we-learned
 
   - title: Interactive programs
