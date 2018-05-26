@@ -18,8 +18,7 @@ In Elm, **functions are values**, and as we already know: all values have types.
 In Excel, you cannot treat data and functions as the same type of thing.
 Elm does not make that distinction, so functions have types.
 
-Generally, we prefer to write out the types of our functions
-because it's another way to describe meaning and intent.
+Generally, we write out the types of our functions to describe meaning and intent.
 All type annotations are optional in Elm,
 but if you make a mistake, the error messages are much nicer if you've used them.
 

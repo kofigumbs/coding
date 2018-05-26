@@ -50,6 +50,6 @@ And the cycle repeats forever!
 
 > ⭐️ **Try**
 > 
-> 0. Run the program _as-is_ and click on the number
-> 0. Change `view` so that the model increases by _2_ on each click
-> 0. Change `update` so that the model is _multiplied by 2_ on each click
+> * Run the program _as-is_ and click on the number
+> * Change `view` so that the model increases by _2_ on each click
+> * Change `update` so that the model is _multiplied by 2_ on each click

@@ -30,5 +30,5 @@ which is always the **most recent version of your model**.
 
 > ⭐️ **Try**
 >
-> 1. Change `model` so that the program shows _100_
-> 2. Change `view` so that the program shows _$100_
+> * Change `model` so that the program shows _100_
+> * Change `view` so that the program shows _$100_
