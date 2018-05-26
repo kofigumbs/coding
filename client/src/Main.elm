@@ -22,7 +22,7 @@ type alias Model =
 
 type Page
     = Blank
-    | Transitioning { from : Page }
+    | TransitioningFrom Page
     | Dashboard Dashboard.Page.Model
     | Lesson Lesson.Page.Model
     | Review Review.Page.Model
@@ -41,7 +41,7 @@ type Msg
     = NewUser (Maybe Value)
     | SetRoute (Maybe Route.Route)
     | Loaded Page
-    | Transitioned Page
+    | TransitionedTo Page
     | Animate Transition.Animation
     | DashboardMsg Dashboard.Page.Msg
     | LessonMsg Lesson.Page.Msg
@@ -57,11 +57,20 @@ update msg ({ context } as model) =
         ( SetRoute destination, _ ) ->
             goTo destination model
 
-        ( Transitioned page, _ ) ->
-            ( { model | page = page, transition = Transition.queueInitial model.transition }, Cmd.none )
+        ( TransitionedTo page, _ ) ->
+            ( { model
+                | page = page
+                , transition = Transition.queueInitial model.transition
+              }
+            , Cmd.none
+            )
 
-        ( Loaded page, Transitioning _ ) ->
-            ( { model | transition = Transition.queueNext (Transitioned page) model.transition }, Cmd.none )
+        ( Loaded page, TransitioningFrom _ ) ->
+            ( { model
+                | transition = Transition.queueNext (TransitionedTo page) model.transition
+              }
+            , Cmd.none
+            )
 
         ( Loaded page, _ ) ->
             ( { model | page = page }, Cmd.none )
@@ -88,7 +97,7 @@ goTo destination model =
         ( model, fromDestination model.context destination )
     else
         ( { model
-            | page = Transitioning { from = model.page }
+            | page = TransitioningFrom model.page
             , transition = Transition.queueLoading model.transition
           }
         , fromDestination model.context destination
@@ -146,8 +155,8 @@ viewPage page =
         Review model ->
             Html.map ReviewMsg <| Review.Page.view model
 
-        Transitioning { from } ->
-            viewPage from
+        TransitioningFrom page ->
+            viewPage page
 
 
 subscriptions : Model -> Sub Msg
