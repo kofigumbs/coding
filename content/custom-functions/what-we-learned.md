@@ -1,8 +1,6 @@
 ---
 title: What did we learn?
-
 ---
-
 ### Creating your own functions
 
     plusTwo x =
@@ -10,5 +8,4 @@ title: What did we learn?
 
 ### Using your custom functions
 
-    five =
-      plusTwo 3
+    5 == plusTwo 3
