@@ -32,4 +32,4 @@ which is always the **most recent version of your model**.
 > * Change `model` so that the program shows _100_
 > * Change `view` so that the program shows _$100_
 
-///HINT: You can put multiple texts within a div.
+_HINT:_ You can put multiple texts within a div.

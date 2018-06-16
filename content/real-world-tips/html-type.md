@@ -35,6 +35,6 @@ In practice, people shorten that description to "an Html _of_ String".
 >
 > * Predict what will appear when you run the code
 > * Run the code _as-is_
-> * Fix any errors (note: this is not interactive \[i.e., this does not have an update\])
+> * Fix any errors — **note:** this is _not_ interactive, since it doesn't have an `update`
 >
 > _HINT:_ You can have a List with `String` or a List with `number`, but not both at once!

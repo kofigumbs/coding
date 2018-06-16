@@ -22,13 +22,11 @@ code: |+
     currentModel + 1
 
 ---
-Now that we know how to make decisions with `if`/`then`/`else`, we can build more interesting programs. In this example, the code _should_ let you increase _and_ decrease the number on the screen. However, the code shown on the left is broken. **Messages like** `**Increment**` **and** `**Decrement**` **should connect your view to your update**, but the code currently does not.
+Now that we know how to make decisions with `if`/`then`/`else`, we can build more interesting programs. In this example, the code _should_ let you increase _and_ decrease the number on the screen. However, the code shown on the left is broken. **Messages like `"Increment"` and `"Decrement"` **should connect your view to your `update`**, but the code currently does not.
 
 > ⭐️ **Try**
 >
 > * Run the program _as-is_
 > * Fix the `update` by using `if`, so that clicking "-" makes the number decrease by 1
 
-///HINT1: original functionality (currentModel + 1) should continue to be used 
-
-///HINT2: if message == "Increment" then currentModel + 1 else currentModel – 1
+_HINT:_ Your solution should continue to use the existing functionality: `currentModel + 1`... but only _if_ a certain message is sent!

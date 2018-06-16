@@ -21,9 +21,17 @@ The line `f(x) = x + 5` creates a brand new function, with the following propert
 
 Notice how **we can use arguments inside the body** of the function. Let's decompose exactly how this works:
 
-    f(1) = 1 + 5
-    1 + 5 = 6
-    therefore, f(1) = 6
+    f(1)
+
+... can be replaced with
+
+    1 + 5
+
+... which can be replaced with
+
+    6
+
+Therefore, `f(1) == 6`!
 
 In this example, 1 is substituted for `x` every time we use the function.
 So `f` just adds 5 to whatever number you provide.
