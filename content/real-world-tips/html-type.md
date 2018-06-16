@@ -21,7 +21,6 @@ Elm requires that we explicitly note the type of the values that the Html can pr
 Here's how that plays out in our example:
 
 * Since `Html` is a type inside the Html file, we'll use `exposing` to import it.
-  That way, we don't have to write `Html.Html`.
 * `plusButton` is a `Html` **that can produce** `String` **messages**
 * `resetButton` is a `Html` **that can produce** `number` **messages**
 

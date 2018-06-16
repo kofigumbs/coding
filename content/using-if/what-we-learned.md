@@ -3,8 +3,8 @@ title: What did we learn?
 ---
 ### Bool's are either True or False
 
-    boolA : Bool
-    boolA = "Left" == "Right"
+    thisIsFalse : Bool
+    thisIsFalse = "Left" == "Right"
 
 ### 3 parts to an `if`/`then`/`else`
 
