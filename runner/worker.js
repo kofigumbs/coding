@@ -23,7 +23,7 @@ exports.handler = async (body, callback) => {
   const output = await shell("mktemp");
   await util.promisify(fs.writeFile)(input, body.elm);
   try {
-    await shell(`elm-make --yes --output=${output}.js ${input}`);
+    await shell(`elm-make --yes --debug --output=${output}.js ${input}`);
     const js = await util.promisify(fs.readFile)(`${output}.js`, "utf8");
     callback({ output: toHtml(js) });
   } catch(e) {
