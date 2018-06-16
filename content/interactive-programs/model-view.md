@@ -17,10 +17,8 @@ code: |-
 
   update message currentModel =
     0
-
 ---
-
-In Elm, we use the term "model" to refer **the data in your program**.
+In Elm, we use the term "model" to refer to **the data in your program**.
 In this example, our data is the number 42.
 
 Having data is nice, but showing that data on the screen is even nicer!
@@ -30,5 +28,8 @@ which is always the **most recent version of your model**.
 
 > ⭐️ **Try**
 >
+> * Run the program as-is
 > * Change `model` so that the program shows _100_
 > * Change `view` so that the program shows _$100_
+
+_HINT:_ You can put multiple texts within a div.

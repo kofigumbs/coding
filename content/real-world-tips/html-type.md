@@ -14,7 +14,6 @@ code: |-
 
   main =
     div [] [ plusButton, resetButton ]
-
 ---
 We've talked at length about Html, but we've yet to write its type.
 Recall that `onClick` allows Html to produce a message.
@@ -36,6 +35,6 @@ In practice, people shorten that description to "an Html _of_ String".
 >
 > * Predict what will appear when you run the code
 > * Run the code _as-is_
-> * Fix any errors
+> * Fix any errors — **note:** this is _not_ interactive, since it doesn't have an `update`
 >
 > _HINT:_ You can have a List with `String` or a List with `number`, but not both at once!
