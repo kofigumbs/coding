@@ -61,6 +61,11 @@
     - discovering-types
     - what-we-learned
 
+  - title: Secret number
+    location: secret-number
+    items:
+    - test
+
 - title: Spreadsheet Editor
   slug: spreadsheet
   lessons:
