@@ -5,22 +5,32 @@ import Explorer.Ast as Ast
 import Global
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Http
 import Json.Decode as D
 import Json.Encode as E
+import Markdown
 import Task exposing (Task)
 
 
 type alias Model =
     { context : Global.Context
     , code : Ast.Module
+    , hint : Hint
     , results : String
     }
 
 
+type Hint
+    = NoHint
+    | ImportHint Ast.Import
+    | NameHint String
+    | ExprHint Ast.Expr
+
+
 init : Global.Context -> Task x Model
 init context =
-    Task.map (Model context demoCode)
+    Task.map (Model context demoCode NoHint)
         (compile context (Ast.toElm demoCode))
 
 
@@ -41,6 +51,7 @@ demoCode =
 type Msg
     = NoOp
     | CompileResponse String
+    | SetHint Hint
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -51,6 +62,9 @@ update msg model =
 
         CompileResponse html ->
             ( { model | results = html }, Cmd.none )
+
+        SetHint hint ->
+            ( { model | hint = hint }, Cmd.none )
 
 
 compile : Global.Context -> String -> Task x String
@@ -67,19 +81,8 @@ view : Model -> Html Msg
 view model =
     div []
         [ viewEditor model.code
-        , iframe
-            [ srcdoc model.results
-            , sandbox <|
-                "allow-scripts"
-                    ++ " allow-popups"
-                    ++ " allow-popups-to-escape-sandbox"
-            , style
-                [ ( "width", "50%" )
-                , ( "padding", "60px" )
-                , ( "float", "right" )
-                ]
-            ]
-            []
+        , viewHint model.hint
+        , viewResults model.results
         ]
 
 
@@ -93,9 +96,8 @@ viewEditor code =
             , ( "padding", "60px" )
 
             -- FILL SCREEN
-            , ( "float", "left" )
             , ( "width", "50vw" )
-            , ( "height", "100vh" )
+            , ( "height", "80vh" )
             ]
         ]
     <|
@@ -105,9 +107,9 @@ viewEditor code =
 
 viewImport : Ast.Import -> Html Msg
 viewImport import_ =
-    case import_ of
-        Ast.Qualified name ->
-            div []
+    div [ onClick <| SetHint <| ImportHint import_ ] <|
+        case import_ of
+            Ast.Qualified name ->
                 [ span [ pink ] [ text "import", space ]
                 , span [ blue ] [ text name ]
                 ]
@@ -180,6 +182,57 @@ indented =
     style [ ( "margin-left", "40px" ) ]
 
 
+viewHint : Hint -> Html Msg
+viewHint hint =
+    div
+        [ backgroundLight
+        , style
+            [ ( "width", "50%" )
+            , ( "height", "20vh" )
+            , ( "padding", "30px" )
+            ]
+        ]
+        [ case hint of
+            NoHint ->
+                text ""
+
+            ImportHint (Ast.Qualified name) ->
+                Markdown.toHtml [] <|
+                    String.join "\n"
+                        [ "The `import` keyword lets you reference code from other files."
+                        , "In this example, `" ++ name ++ "` is somewhere in another Elm file."
+                        , "`import` lets us **split our code up into separate files** but reference them together when we need to."
+                        ]
+
+            NameHint _ ->
+                text "TODO: __VALUE__"
+
+            ExprHint _ ->
+                text "TODO: __EXPRESSION__"
+        ]
+
+
+viewResults : String -> Html msg
+viewResults html =
+    iframe
+        [ srcdoc html
+        , sandbox <|
+            "allow-scripts"
+                ++ " allow-popups"
+                ++ " allow-popups-to-escape-sandbox"
+        , style
+            [ ( "padding", "60px" )
+
+            -- MOVE RIGHT
+            , ( "position", "absolute" )
+            , ( "top", "0" )
+            , ( "right", "0" )
+            , ( "width", "50%" )
+            ]
+        ]
+        []
+
+
 
 -- MONOKAI COLORS
 
@@ -222,3 +275,8 @@ white =
 background : Attribute msg
 background =
     style [ ( "background-color", "#2c292d" ) ]
+
+
+backgroundLight : Attribute msg
+backgroundLight =
+    style [ ( "background-color", "#fafafa" ) ]
