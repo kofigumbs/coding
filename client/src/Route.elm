@@ -9,6 +9,7 @@ import UrlParser exposing (..)
 type Route
     = Dashboard
     | Lesson String
+    | Explorer
     | Review String
 
 
@@ -25,6 +26,7 @@ parser =
     oneOf
         [ map Dashboard <| s "dashboard"
         , map Lesson <| s "lesson" </> string
+        , map Explorer <| s "explorer"
         , map Review <| s "review" </> string
         ]
 
@@ -52,6 +54,9 @@ hash route =
 
         Lesson code ->
             "#/lesson/" ++ code
+
+        Explorer ->
+            "#/explorer"
 
         Review code ->
             "#/review/" ++ code

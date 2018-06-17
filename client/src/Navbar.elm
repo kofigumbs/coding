@@ -2,7 +2,6 @@ module Navbar exposing (view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Route
 
 
 view : List (Html msg) -> Html msg

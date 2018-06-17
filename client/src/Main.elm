@@ -1,6 +1,7 @@
 module Main exposing (..)
 
 import Dashboard.Page
+import Explorer.Page
 import Global
 import Html
 import Js
@@ -25,6 +26,7 @@ type Page
     | TransitioningFrom Page
     | Dashboard Dashboard.Page.Model
     | Lesson Lesson.Page.Model
+    | Explorer Explorer.Page.Model
     | Review Review.Page.Model
 
 
@@ -45,6 +47,7 @@ type Msg
     | Animate Transition.Animation
     | DashboardMsg Dashboard.Page.Msg
     | LessonMsg Lesson.Page.Msg
+    | ExplorerMsg Explorer.Page.Msg
     | ReviewMsg Review.Page.Msg
 
 
@@ -84,6 +87,9 @@ update msg ({ context } as model) =
         ( LessonMsg pageMsg, Lesson pageModel ) ->
             Lesson.Page.update pageMsg pageModel |> mapPage Lesson LessonMsg model
 
+        ( ExplorerMsg pageMsg, Explorer pageModel ) ->
+            Explorer.Page.update pageMsg pageModel |> mapPage Explorer ExplorerMsg model
+
         ( ReviewMsg pageMsg, Review pageModel ) ->
             Review.Page.update pageMsg pageModel |> mapPage Review ReviewMsg model
 
@@ -115,6 +121,9 @@ fromDestination context destination =
 
         Just (Route.Lesson slug) ->
             Task.perform (Loaded << Lesson) (Lesson.Page.init context slug)
+
+        Just Route.Explorer ->
+            Task.perform (Loaded << Explorer) (Explorer.Page.init context)
 
         Just (Route.Review slug) ->
             Task.perform (Loaded << Review) (Review.Page.init context slug)
@@ -151,6 +160,9 @@ viewPage page =
 
         Lesson model ->
             Html.map LessonMsg <| Lesson.Page.view model
+
+        Explorer model ->
+            Html.map ExplorerMsg <| Explorer.Page.view model
 
         Review model ->
             Html.map ReviewMsg <| Review.Page.view model
