@@ -1,5 +1,6 @@
 import 'bulma/css/bulma.css';
 import './main.css';
+import './three-dots.min.css';
 import Elm from './Main.elm';
 import registerServiceWorker from './registerServiceWorker';
 
