@@ -1,6 +1,7 @@
 module Explorer.Page exposing (Model, Msg, init, update, view)
 
 import Char
+import Explorer.Ast as Ast
 import Global
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -12,46 +13,26 @@ import Task exposing (Task)
 
 type alias Model =
     { context : Global.Context
-    , code : Ast
+    , code : Ast.Module
     , results : String
     }
-
-
-type alias Ast =
-    { imports : List Import
-    , definitions : List ( String, Expr )
-    }
-
-
-type Import
-    = Qualified String
-
-
-type Expr
-    = LiteralInt Int
-    | LiteralString String
-    | If Expr Expr Expr
-    | Binop String Expr Expr
-    | VarGlobal String String
-    | VarLocal String
-    | Call Expr (List Expr)
 
 
 init : Global.Context -> Task x Model
 init context =
     Task.map (Model context demoCode)
-        (compile context (toElm demoCode))
+        (compile context (Ast.toElm demoCode))
 
 
-demoCode : Ast
+demoCode : Ast.Module
 demoCode =
-    { imports = [ Qualified "Html", Qualified "Secrets" ]
+    { imports = [ Ast.Qualified "Html", Ast.Qualified "Secrets" ]
     , definitions =
-        [ ( "guess", LiteralInt 7 )
+        [ ( "guess", Ast.LiteralInt 7 )
         , ( "main"
-          , If (Binop "==" (VarLocal "guess") (VarGlobal "Secrets" "magicNumber"))
-                (Call (VarGlobal "Html" "text") [ LiteralString "YOU GOT IT!" ])
-                (Call (VarGlobal "Html" "text") [ LiteralString "NOT QUITE, try again..." ])
+          , Ast.If (Ast.Binop "==" (Ast.VarLocal "guess") (Ast.VarGlobal "Secrets" "magicNumber"))
+                (Ast.Call (Ast.VarGlobal "Html" "text") [ Ast.LiteralString "YOU GOT IT!" ])
+                (Ast.Call (Ast.VarGlobal "Html" "text") [ Ast.LiteralString "NOT QUITE, try again..." ])
           )
         ]
     }
@@ -70,60 +51,6 @@ update msg model =
 
         CompileResponse html ->
             ( { model | results = html }, Cmd.none )
-
-
-toElm : Ast -> String
-toElm code =
-    String.join newline <|
-        List.map fromImport code.imports
-            ++ List.map fromDef code.definitions
-
-
-fromImport : Import -> String
-fromImport import_ =
-    case import_ of
-        Qualified name ->
-            "import " ++ name
-
-
-fromDef : ( String, Expr ) -> String
-fromDef ( name, body ) =
-    name ++ " =" ++ newline ++ indent ++ fromExpr body
-
-
-fromExpr : Expr -> String
-fromExpr expr =
-    case expr of
-        LiteralInt i ->
-            toString i
-
-        LiteralString s ->
-            "\"" ++ s ++ "\""
-
-        If condition true false ->
-            "if " ++ fromExpr condition ++ " then " ++ fromExpr true ++ " else " ++ fromExpr false
-
-        Binop symbol left right ->
-            fromExpr left ++ " " ++ symbol ++ fromExpr right
-
-        VarGlobal home name ->
-            home ++ "." ++ name
-
-        VarLocal name ->
-            name
-
-        Call function args ->
-            fromExpr function ++ " " ++ String.join " " (List.map fromExpr args)
-
-
-newline : String
-newline =
-    "\n"
-
-
-indent : String
-indent =
-    " "
 
 
 compile : Global.Context -> String -> Task x String
@@ -156,7 +83,7 @@ view model =
         ]
 
 
-viewEditor : Ast -> Html Msg
+viewEditor : Ast.Module -> Html Msg
 viewEditor code =
     div
         [ background
@@ -176,17 +103,17 @@ viewEditor code =
             ++ List.map viewDefinition code.definitions
 
 
-viewImport : Import -> Html Msg
+viewImport : Ast.Import -> Html Msg
 viewImport import_ =
     case import_ of
-        Qualified name ->
+        Ast.Qualified name ->
             div []
                 [ span [ pink ] [ text "import", space ]
                 , span [ blue ] [ text name ]
                 ]
 
 
-viewDefinition : ( String, Expr ) -> Html Msg
+viewDefinition : ( String, Ast.Expr ) -> Html Msg
 viewDefinition ( name, body ) =
     div [ style [ ( "margin-top", "40px" ) ] ]
         [ div [] [ span [ white ] [ text name, space, text "=" ] ]
@@ -194,16 +121,16 @@ viewDefinition ( name, body ) =
         ]
 
 
-viewExpr : Expr -> Html Msg
+viewExpr : Ast.Expr -> Html Msg
 viewExpr expr =
     case expr of
-        LiteralInt i ->
+        Ast.LiteralInt i ->
             span [ blue ] [ text <| toString i ]
 
-        LiteralString s ->
+        Ast.LiteralString s ->
             span [ yellow ] [ quote, text s, quote ]
 
-        If condition true false ->
+        Ast.If condition true false ->
             div []
                 [ div []
                     [ span [ pink ] [ text "if", space ]
@@ -215,23 +142,23 @@ viewExpr expr =
                 , div [ indented ] [ viewExpr false ]
                 ]
 
-        Binop symbol left right ->
+        Ast.Binop symbol left right ->
             span []
                 [ viewExpr left
                 , span [ pink ] [ space, text symbol, space ]
                 , viewExpr right
                 ]
 
-        VarGlobal home name ->
+        Ast.VarGlobal home name ->
             span []
                 [ span [ blue ] [ text home ]
                 , span [ white ] [ text ".", text name ]
                 ]
 
-        VarLocal name ->
+        Ast.VarLocal name ->
             span [ white ] [ text name ]
 
-        Call function args ->
+        Ast.Call function args ->
             viewExpr function
                 :: List.map viewExpr args
                 |> List.intersperse space
