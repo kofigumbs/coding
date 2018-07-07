@@ -46,7 +46,7 @@ init context =
 
 getRoadmap : Global.Context -> Task Http.Error (List Project)
 getRoadmap context =
-    Http.get (context.contentApi ++ "/dashboard")
+    Http.get "/lessons/manifest.json"
         (D.field "projects" <|
             D.list <|
                 D.map3 Project

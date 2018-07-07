@@ -13,7 +13,6 @@ const runnerApi =
     : "ws://localhost:3001";
 
 const app = Elm.Main.embed(document.getElementById('root'), {
-  contentApi: "/content",
   runnerApi: runnerApi,
   user: getProgress(),
 });

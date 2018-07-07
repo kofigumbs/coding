@@ -8,8 +8,7 @@ type Error
 
 
 type alias Context =
-    { contentApi : String
-    , runnerApi : String
+    { runnerApi : String
     , user : Value
     }
 

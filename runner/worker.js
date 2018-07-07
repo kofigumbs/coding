@@ -25,8 +25,8 @@ exports.handler = async body => {
   try {
     await shell(`elm-make --yes --output=${output}.js ${input}`);
     const js = await util.promisify(fs.readFile)(`${output}.js`, "utf8");
-    return { output: toHtml(js) };
+    return { id: body.id, output: toHtml(js) };
   } catch(e) {
-    return { error: e.stderr.split(input).join("") };
+    return { id: body.id, error: e.stderr.split(input).join("") };
   }
 };

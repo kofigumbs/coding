@@ -1,6 +1,5 @@
 module Lesson.Page exposing (Model, Msg, init, subscriptions, update, view)
 
-import Content exposing (Content)
 import Global
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -9,83 +8,100 @@ import Http
 import Js
 import Json.Decode as D
 import Json.Encode as E
-import Lesson.Code exposing (Code)
 import Lesson.Editor
+import Markdown
 import Navbar
-import Pagination
 import Route
-import Sequence exposing (Sequence)
 import Task exposing (Task)
 import WebSocket as WS
+
+
+-- Move string to .md files
+-- Compile on input
+-- Add finished/next button
+-- Debounce compile messages
+-- Make some more lessons!
 
 
 type alias Model =
     { context : Global.Context
     , slug : String
-    , overlay : Maybe Overlay
-
-    -- REMOTE
-    , lesson : String
-    , items : Sequence Item
+    , chunks : List Chunk
     }
 
 
-type Overlay
-    = Summary
-    | Loading
-    | Runner Output
-
-
-type alias Item =
-    { title : String
-    , content : Content
-    , editor : Maybe Editor
-    }
-
-
-type alias Editor =
-    { interactive : Bool
-    , code : Code
-    }
+type Chunk
+    = Text String
+    | Code String Output
 
 
 type Msg
     = NoOp
-    | EditorOpen
-    | EditorClose
-    | EditorInput String
-    | Next
-    | Previous
-    | SetOverlay (Maybe Overlay)
-    | Compile String
-    | CompileResponse Output
+    | Load
+    | Input Int String
+    | Compiled Int Output
     | Finish
 
 
 type Output
-    = Html String
+    = Loading
+    | Html String
     | Error String
     | Unknown
 
 
 init : Global.Context -> String -> Task Never Model
 init context slug =
-    Http.get (context.contentApi ++ "/lessons/" ++ slug)
-        (D.map2 (Model context slug (Just Summary))
-            (D.field "title" D.string)
-            (D.field "items" <|
-                Sequence.decoder <|
-                    D.map3 Item
-                        (D.field "title" D.string)
-                        (D.field "content" Content.decoder)
-                        (D.field "code" Lesson.Code.decoder
-                            |> D.map (Editor False)
-                            |> D.maybe
-                        )
-            )
-        )
-        |> Http.toTask
+    -- Http.getString ("%PUBLIC_PATH%/lessons/" ++ slug ++ ".md")
+    -- |> Http.toTask
+    Task.succeed """# Guess the secret number
+
+```elm
+import Essentials exposing (table, row2, secretNumber)
+
+guess =
+  7
+
+main =
+  table
+    [ row2 "Your guess" guess
+    , row2 "Correct?" (secretNumber == guess)
+    ]
+```
+    """
+        |> Task.map (Model context slug << chunk [])
         |> Task.onError ({- TODO -} toString >> Debug.crash)
+
+
+chunk : List Chunk -> String -> List Chunk
+chunk chunks raw =
+    case findFenced raw of
+        Nothing ->
+            List.reverse (Text raw :: chunks)
+
+        Just { before, inside, after } ->
+            chunk (Code inside Loading :: Text before :: chunks) after
+
+
+findFenced : String -> Maybe { before : String, inside : String, after : String }
+findFenced input =
+    case ( String.indexes "```elm" input, String.indexes "```" input ) of
+        ( start :: _, _ :: end :: _ ) ->
+            let
+                leftStart =
+                    start + 6
+
+                rightEnd =
+                    String.length input - 3 - end
+            in
+            Just
+                { before = String.left start input
+                , inside = String.slice leftStart end input
+                , after = String.right rightEnd input
+                }
+
+        _ ->
+            Nothing
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -94,29 +110,22 @@ update msg model =
         NoOp ->
             pure model
 
-        EditorOpen ->
-            ( { model | items = Sequence.edit (setInteractive True) model.items }, Lesson.Editor.focus (\_ -> NoOp) )
+        Load ->
+            ( model
+            , Cmd.batch <|
+                List.indexedMap (compileCode model.context) model.chunks
+            )
 
-        EditorClose ->
-            pure { model | items = Sequence.edit (setInteractive False) model.items }
+        Input index code ->
+            -- ( { model | overlay = Just Loading }, compile model.context code )
+            pure model
 
-        EditorInput code ->
-            pure { model | items = Sequence.edit (setRaw code) model.items }
-
-        Next ->
-            pure { model | items = Sequence.next model.items }
-
-        Previous ->
-            pure { model | items = Sequence.previous model.items }
-
-        SetOverlay overlay ->
-            pure { model | overlay = overlay }
-
-        Compile code ->
-            ( { model | overlay = Just Loading }, compile model.context code )
-
-        CompileResponse output ->
-            pure { model | overlay = Just <| Runner output }
+        Compiled index output ->
+            pure
+                { model
+                    | chunks =
+                        List.indexedMap (loadCode index output) model.chunks
+                }
 
         Finish ->
             ( model
@@ -132,27 +141,32 @@ pure model =
     ( model, Cmd.none )
 
 
-setInteractive : Bool -> Item -> Item
-setInteractive to item =
-    let
-        transform editor =
-            { editor | interactive = to }
-    in
-    { item | editor = Maybe.map transform item.editor }
+compileCode : Global.Context -> Int -> Chunk -> Cmd Msg
+compileCode context index chunk =
+    case chunk of
+        Text _ ->
+            Cmd.none
+
+        Code elm _ ->
+            compile context index elm
 
 
-setRaw : String -> Item -> Item
-setRaw to item =
-    let
-        transform ({ code } as editor) =
-            { editor | code = { code | raw = to } }
-    in
-    { item | editor = Maybe.map transform item.editor }
+loadCode : Int -> Output -> Int -> Chunk -> Chunk
+loadCode target output i current =
+    if i /= target then
+        current
+    else
+        case current of
+            Text _ ->
+                current
+
+            Code elm _ ->
+                Code elm output
 
 
-compile : Global.Context -> String -> Cmd Msg
-compile context code =
-    E.object [ ( "elm", E.string code ) ]
+compile : Global.Context -> Int -> String -> Cmd Msg
+compile context id code =
+    E.object [ ( "id", E.int id ), ( "elm", E.string code ) ]
         |> E.encode 0
         |> WS.send context.runnerApi
 
@@ -161,167 +175,64 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     WS.listen model.context.runnerApi <|
         D.decodeString
-            (D.oneOf
-                [ D.map Html <| D.field "output" D.string
-                , D.map Error <| D.field "error" D.string
-                ]
+            (D.map2 Compiled
+                (D.field "id" D.int)
+                (D.oneOf
+                    [ D.map Html <| D.field "output" D.string
+                    , D.map Error <| D.field "error" D.string
+                    , D.succeed Unknown
+                    ]
+                )
             )
-            >> Result.withDefault Unknown
-            >> CompileResponse
+            >> Result.withDefault NoOp
 
 
 view : Model -> Html Msg
 view model =
-    div
-        []
-        [ Navbar.view
-            [ viewContents model.lesson model.items ]
-        , section
-            [ class "section" ]
-            [ div
-                [ class "container" ]
-                [ viewItem <| Sequence.current model.items ]
-            ]
-        , when model.overlay <|
-            \overlay ->
-                case overlay of
-                    Summary ->
-                        viewSummary model.lesson model.items
-
-                    Loading ->
-                        viewLoading
-
-                    Runner (Html html) ->
-                        viewRunnerHtml html
-
-                    Runner (Error reason) ->
-                        viewRunnerError reason
-
-                    Runner Unknown ->
-                        viewRunnerUnknown
-        ]
+    div []
+        (Navbar.view []
+            :: dummyLoad
+            :: List.indexedMap viewChunk model.chunks
+        )
 
 
-viewContents : String -> Sequence Item -> Html Msg
-viewContents lesson items =
-    a
-        [ class "navbar-link"
-        , onClick <| SetOverlay (Just Summary)
-        ]
-        [ text "Overview" ]
+viewChunk : Int -> Chunk -> Html Msg
+viewChunk index chunk =
+    case chunk of
+        Text raw ->
+            section
+                [ class "section" ]
+                [ div
+                    [ class "container" ]
+                    [ div
+                        [ class "column is-12 content" ]
+                        [ Markdown.toHtml [] raw ]
+                    ]
+                ]
+
+        Code elm output ->
+            div
+                [ class "columns is-gapless" ]
+                [ div [ class "column is-6" ]
+                    [ Lesson.Editor.view (Input index) elm ]
+                , div [ class "column is-6" ] [ viewOutput output ]
+                ]
 
 
-viewContentLesson : Bool -> Item -> Html Msg
-viewContentLesson isCurrent { title } =
-    div
-        [ classList
-            [ ( "navbar-item", True )
-            , ( "has-text-info", isCurrent )
-            ]
-        ]
-        [ text title ]
-
-
-viewItem : ( Sequence.Placement, Item ) -> Html Msg
-viewItem ( placement, item ) =
-    div
-        []
-        [ h1 [ class "title" ] [ text item.title ]
-        , div
-            [ class "columns" ]
-            [ when item.editor <| viewEditor [ class "column is-sticky" ]
-            , div [ class "column" ] [ Content.view item.content ]
-            ]
-        , Pagination.view
-            { previous = onClick Previous
-            , next = onClick Next
-            , finish = onClick Finish
-            }
-            placement
-        ]
-
-
-viewEditor : List (Attribute Msg) -> Editor -> Html Msg
-viewEditor layoutAttrs editor =
-    if editor.interactive then
-        div layoutAttrs
-            [ Lesson.Editor.view EditorInput editor.code.raw
-            , level
+viewOutput : Output -> Html Msg
+viewOutput output =
+    case output of
+        Loading ->
+            div
+                [ class "has-text-centered" ]
                 [ button
-                    [ class "button is-danger is-inverted", onClick EditorClose ]
-                    [ text "❌ Close" ]
-                , button
-                    [ class "button", onClick <| Compile editor.code.raw ]
-                    [ text "🏃 Run" ]
+                    [ class "button is-loading is-white", disabled True ]
+                    []
                 ]
-            ]
-    else
-        div layoutAttrs
-            [ pre
-                [ class "block" ]
-                [ code [] <| List.map viewCode editor.code.rendered ]
-            , level
-                [ button
-                    [ class "button", onClick EditorOpen ]
-                    [ text "✏️  Edit" ]
-                ]
-            ]
 
-
-viewCode : Lesson.Code.Render -> Html msg
-viewCode rendered =
-    case rendered of
-        Lesson.Code.Raw content ->
-            text content
-
-        Lesson.Code.Focus content ->
-            strong [ class "has-text-info" ] [ text content ]
-
-
-viewSummary : String -> Sequence Item -> Html Msg
-viewSummary lesson items =
-    modalCard
-        [ div
-            [ class "modal-card-head" ]
-            [ p [] [ strong [] [ text lesson ] ] ]
-        , div
-            [ class "modal-card-body" ]
-            [ div
-                [ class "content" ]
-                [ ol [] <| Sequence.mapToList viewSummaryItem items ]
-            ]
-        , div
-            [ class "modal-card-foot" ]
-            [ button
-                [ class "button is-primary"
-                , onClick <| SetOverlay Nothing
-                ]
-                [ text "✔ Let's go" ]
-            ]
-        ]
-
-
-viewSummaryItem : Bool -> Item -> Html Msg
-viewSummaryItem isCurrent { title } =
-    li [ classList [ ( "has-text-info", isCurrent ) ] ] [ text title ]
-
-
-viewLoading : Html Msg
-viewLoading =
-    modalCard
-        [ div
-            [ class "modal-card-body has-text-centered" ]
-            [ button [ class "button is-loading is-white" ] [] ]
-        ]
-
-
-viewRunnerHtml : String -> Html Msg
-viewRunnerHtml html =
-    modalCard
-        [ div
-            [ class "modal-card-body" ]
-            [ iframe
-                [ srcdoc html
+        Html raw ->
+            iframe
+                [ srcdoc raw
                 , sandbox <|
                     "allow-scripts"
                         ++ " allow-popups"
@@ -329,48 +240,23 @@ viewRunnerHtml html =
                 , class "full"
                 ]
                 []
-            ]
-        ]
+
+        Error reason ->
+            div
+                [ class "has-background-light" ]
+                [ pre
+                    [ class "has-background-info has-text-white" ]
+                    [ text reason ]
+                ]
+
+        Unknown ->
+            div
+                [ class "has-background-warning" ]
+                [ strong []
+                    [ text "Oops, we messed up somewhere along the line..." ]
+                ]
 
 
-viewRunnerError : String -> Html Msg
-viewRunnerError reason =
-    modalCard
-        [ div
-            [ class "modal-card-body has-background-info" ]
-            [ pre [ class "has-background-info has-text-white" ] [ text reason ] ]
-        ]
-
-
-viewRunnerUnknown : Html Msg
-viewRunnerUnknown =
-    modalCard
-        [ div
-            [ class "modal-card-body has-background-warning" ]
-            [ strong [] [ text "Oops, we messed up somewhere along the line..." ] ]
-        ]
-
-
-level : List (Html msg) -> Html msg
-level =
-    div [ class "level" ]
-        << List.map (\child -> div [ class "level-item" ] [ child ])
-
-
-modalCard : List (Html Msg) -> Html Msg
-modalCard children =
-    div
-        [ class "modal is-active" ]
-        [ div [ class "modal-background", onClick <| SetOverlay Nothing ] []
-        , div [ class "modal-card" ] children
-        ]
-
-
-when : Maybe a -> (a -> Html msg) -> Html msg
-when maybe f =
-    case maybe of
-        Nothing ->
-            text ""
-
-        Just x ->
-            f x
+dummyLoad : Html Msg
+dummyLoad =
+    node "style" [ on "load" (D.succeed Load) ] []

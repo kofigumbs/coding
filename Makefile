@@ -1,3 +1,2 @@
-client/build: $(wildcard content/**/* client/src/**/* client/public/**/*)
-	cd content && rake
+client/build: $(wildcard client/**/*)
 	cd client && npm install && `npm bin`/elm-app build
