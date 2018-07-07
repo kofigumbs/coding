@@ -1,13 +1,11 @@
-const app = require("express")();
-const cors = require('cors')
-const bodyParser = require("body-parser");
 const worker = require("./worker");
+const WebSocket = require("ws");
+const server = new WebSocket.Server({ port: process.env["PORT"] || 3001 });
 
-app.use(cors());
-app.use(bodyParser.json());
-app.post("/compile", async (request, response) => {
-  await worker.handler(request.body, data => response.send(data));
+server.on("connection", (socket) => {
+  socket.on("message", async (message) => {
+    worker.handler(JSON.parse(message))
+      .then(data => socket.send(JSON.stringify(data)))
+      .catch(e => console.log(e, socket.send("500")));
+  });
 });
-
-const port = process.env["PORT"] || 3001;
-app.listen(port, () => console.log(`Listening on port ${port}...`));

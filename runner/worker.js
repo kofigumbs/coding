@@ -18,15 +18,15 @@ const toHtml = js => `
 </html>
 `;
 
-exports.handler = async (body, callback) => {
+exports.handler = async body => {
   const input = await shell("mktemp");
   const output = await shell("mktemp");
   await util.promisify(fs.writeFile)(input, body.elm);
   try {
     await shell(`elm-make --yes --output=${output}.js ${input}`);
     const js = await util.promisify(fs.readFile)(`${output}.js`, "utf8");
-    callback({ output: toHtml(js) });
+    return { output: toHtml(js) };
   } catch(e) {
-    callback({ error: e.stderr.split(input).join("") });
+    return { error: e.stderr.split(input).join("") };
   }
 };
