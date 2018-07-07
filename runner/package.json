@@ -1,16 +1,14 @@
 {
     "description": "A tiny express server for compiling Elm",
     "repository": "gist.github.com/hkgumbs",
-    "license": "BSD3",
+    "license": "UNLICENSED",
     "scripts": {
         "postinstall": "elm-make --yes",
         "start": "node index.js"
     },
     "dependencies": {
-        "body-parser": "^1.18.2",
-        "cors": "^2.8.4",
         "elm": "^0.18.0",
-        "express": "^4.16.3",
-        "npm": "^5.8.0"
+        "npm": "^5.8.0",
+        "ws": "^5.2.1"
     }
 }

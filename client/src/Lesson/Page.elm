@@ -1,4 +1,4 @@
-module Lesson.Page exposing (Model, Msg, init, update, view)
+module Lesson.Page exposing (Model, Msg, init, subscriptions, update, view)
 
 import Content exposing (Content)
 import Global
@@ -16,6 +16,7 @@ import Pagination
 import Route
 import Sequence exposing (Sequence)
 import Task exposing (Task)
+import WebSocket as WS
 
 
 type alias Model =
@@ -151,17 +152,22 @@ setRaw to item =
 
 compile : Global.Context -> String -> Cmd Msg
 compile context code =
-    Http.toTask
-        (Http.post (context.runnerApi ++ "/compile")
-            (Http.jsonBody <| E.object [ ( "elm", E.string code ) ])
+    E.object [ ( "elm", E.string code ) ]
+        |> E.encode 0
+        |> WS.send context.runnerApi
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    WS.listen model.context.runnerApi <|
+        D.decodeString
             (D.oneOf
                 [ D.map Html <| D.field "output" D.string
                 , D.map Error <| D.field "error" D.string
                 ]
             )
-        )
-        |> Task.onError (\_ -> Task.succeed Unknown)
-        |> Task.perform CompileResponse
+            >> Result.withDefault Unknown
+            >> CompileResponse
 
 
 view : Model -> Html Msg

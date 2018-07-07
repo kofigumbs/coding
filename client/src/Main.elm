@@ -164,6 +164,12 @@ subscriptions model =
     Sub.batch
         [ Js.newUser NewUser
         , Transition.subscription Animate model.transition
+        , case model.page of
+            Lesson page ->
+                Sub.map LessonMsg <| Lesson.Page.subscriptions page
+
+            _ ->
+                Sub.none
         ]
 
 
