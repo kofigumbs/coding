@@ -17,7 +17,6 @@ import WebSocket as WS
 
 
 -- Move string to .md files
--- Compile on input
 -- Add finished/next button
 -- Debounce compile messages
 -- Make some more lessons!
@@ -38,7 +37,7 @@ type Chunk
 type Msg
     = NoOp
     | Load
-    | Input Int String
+    | Edit Int String
     | Compiled Int Output
     | Finish
 
@@ -116,16 +115,15 @@ update msg model =
                 List.indexedMap (compileCode model.context) model.chunks
             )
 
-        Input index code ->
-            -- ( { model | overlay = Just Loading }, compile model.context code )
-            pure model
+        Edit index code ->
+            editCode index code model
 
         Compiled index output ->
-            pure
-                { model
-                    | chunks =
-                        List.indexedMap (loadCode index output) model.chunks
-                }
+            let
+                save elm _ =
+                    Code elm output
+            in
+            pure { model | chunks = mapCodeAt index identity save model.chunks }
 
         Finish ->
             ( model
@@ -151,17 +149,18 @@ compileCode context index chunk =
             compile context index elm
 
 
-loadCode : Int -> Output -> Int -> Chunk -> Chunk
-loadCode target output i current =
-    if i /= target then
-        current
-    else
-        case current of
-            Text _ ->
-                current
-
-            Code elm _ ->
-                Code elm output
+editCode : Int -> String -> Model -> ( Model, Cmd Msg )
+editCode target new model =
+    let
+        updaded =
+            mapCodeAt target
+                (\chunk -> ( chunk, Cmd.none ))
+                (\elm _ -> ( Code new Loading, compile model.context target new ))
+                model.chunks
+    in
+    ( { model | chunks = List.map Tuple.first updaded }
+    , Cmd.batch <| List.map Tuple.second updaded
+    )
 
 
 compile : Global.Context -> Int -> String -> Cmd Msg
@@ -169,6 +168,21 @@ compile context id code =
     E.object [ ( "id", E.int id ), ( "elm", E.string code ) ]
         |> E.encode 0
         |> WS.send context.runnerApi
+
+
+mapCodeAt : Int -> (Chunk -> a) -> (String -> Output -> a) -> List Chunk -> List a
+mapCodeAt target default found =
+    List.indexedMap <|
+        \i chunk ->
+            if i /= target then
+                default chunk
+            else
+                case chunk of
+                    Text _ ->
+                        default chunk
+
+                    Code elm output ->
+                        found elm output
 
 
 subscriptions : Model -> Sub Msg
@@ -214,7 +228,7 @@ viewChunk index chunk =
             div
                 [ class "columns is-gapless" ]
                 [ div [ class "column is-6" ]
-                    [ Lesson.Editor.view (Input index) elm ]
+                    [ Lesson.Editor.view (Edit index) elm ]
                 , div [ class "column is-6" ] [ viewOutput output ]
                 ]
 
