@@ -115,7 +115,11 @@ chunk chunks raw =
             List.reverse (Text raw :: chunks)
 
         Just { before, inside, after } ->
-            chunk (Code (String.trim inside) Initial :: Text before :: chunks) after
+            let
+                fenced =
+                    Code (String.trim inside) Initial
+            in
+            chunk (fenced :: Text before :: chunks) after
 
 
 findFenced : String -> Maybe { before : String, inside : String, after : String }
