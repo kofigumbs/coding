@@ -15,10 +15,10 @@ import Task exposing (Task)
 import WebSocket as WS
 
 
--- Move string to .md files
--- Add finished/next button
--- Debounce compile messages
--- Make some more lessons!
+-- TODO
+--  - Add finished/next button
+--  - Debounce compile messages
+--  - Make some more lessons!
 
 
 type alias Model =
