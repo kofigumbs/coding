@@ -24,7 +24,7 @@ main =
     ]
 ```
 
-# A quick guessing game
+# A quick warmup
 
 Now that you know how to make changes, let's get right to our first challenge.
 This course is structured around short challenges that give you a taste of how programming works.

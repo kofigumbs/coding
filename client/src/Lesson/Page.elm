@@ -191,7 +191,7 @@ view model =
             :: List.indexedMap viewChunk model.chunks
 
 
-viewNavbar : Html msg
+viewNavbar : Html Msg
 viewNavbar =
     nav
         [ class "navbar is-fixed-top" ]
@@ -200,6 +200,28 @@ viewNavbar =
             [ span
                 [ class "navbar-item" ]
                 [ img [ alt "Logo", src "%PUBLIC_URL%/logo.svg" ] [] ]
+            ]
+        , div
+            [ class "navbar-menu is-active" ]
+            [ div
+                [ class "navbar-end" ]
+                [ div [ class "navbar-item" ] [ viewSearch ] ]
+            ]
+        ]
+
+
+viewSearch : Html Msg
+viewSearch =
+    div
+        [ class "field" ]
+        [ div
+            [ class "control" ]
+            [ input
+                [ class "input is-primary is-medium"
+                , type_ "text"
+                , placeholder "Find hints or lessons..."
+                ]
+                []
             ]
         ]
 
