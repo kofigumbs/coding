@@ -28,19 +28,34 @@ toHtml (Row strings) =
 
 row1 : a -> Row
 row1 a =
-    Row [ toString a ]
+    Row [ niceString a ]
 
 
 row2 : a -> b -> Row
 row2 a b =
-    Row [ toString a, toString b ]
+    Row [ niceString a, niceString b ]
 
 
 row3 : a -> b -> c -> Row
 row3 a b c =
-    Row [ toString a, toString b, toString c ]
+    Row [ niceString a, niceString b, niceString c ]
 
 
 row4 : a -> b -> c -> d -> Row
 row4 a b c d =
-    Row [ toString a, toString b, toString c, toString d ]
+    Row [ niceString a, niceString b, niceString c, niceString d ]
+
+
+niceString : a -> String
+niceString a =
+    let
+        attempt =
+            toString a
+    in
+    if String.startsWith "\"" attempt then
+        String.dropLeft 1 attempt
+            |> String.dropRight 1
+            |> String.split "\\\""
+            |> String.join "\""
+    else
+        attempt

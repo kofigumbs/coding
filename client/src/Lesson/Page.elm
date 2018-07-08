@@ -43,7 +43,7 @@ type Msg
 
 
 type Output
-    = Loading
+    = Initial
     | Html String
     | Error String
     | Unknown
@@ -56,11 +56,15 @@ init context slug =
     Task.succeed """
 # Welcome
 
-> Spreadsheets are so usable because they put the data right in front of you...
-> Spreadsheets show the data and hide the functionality.
-> Code shows the functionality, but hides the data.
+> One of the all-time most popular programming models is the spreadsheet.
+> A spreadsheet is the dual of a conventional programming language —
+> a language shows all the code, but hides the data.
+> A spreadsheet shows all the data, but hides the code.
+> Some people believe that spreadsheets are popular
+> because of their two-dimensional grid, but that's a minor factor.
+> Spreadsheets rule because they show the data.
 >
-> — _citation needed_
+> _Bret Victor_
 
 In this course, we'll do our best to present both the functionality _and_ the data.
 For example, in the snippet below, you can change the **code on the left**,
@@ -111,7 +115,7 @@ chunk chunks raw =
             List.reverse (Text raw :: chunks)
 
         Just { before, inside, after } ->
-            chunk (Code inside Loading :: Text before :: chunks) after
+            chunk (Code (String.trim inside) Initial :: Text before :: chunks) after
 
 
 findFenced : String -> Maybe { before : String, inside : String, after : String }
@@ -187,7 +191,7 @@ editCode target new model =
         updaded =
             mapCodeAt target
                 (\chunk -> ( chunk, Cmd.none ))
-                (\elm _ -> ( Code new Loading, compile model.context target new ))
+                (\elm output -> ( Code new output, compile model.context target new ))
                 model.chunks
     in
     ( { model | chunks = List.map Tuple.first updaded }
@@ -268,7 +272,7 @@ viewChunk index chunk =
 viewOutput : Output -> Html Msg
 viewOutput output =
     case output of
-        Loading ->
+        Initial ->
             div
                 [ class "has-text-centered" ]
                 [ button
