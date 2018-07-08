@@ -13,6 +13,6 @@ type alias Context =
     }
 
 
-lessonOne : { title : String, slug : String }
+lessonOne : { slug : String }
 lessonOne =
-    { title = "Text, numbers, and functions", slug = "text-numbers-functions" }
+    { slug = "001-welcome" }
