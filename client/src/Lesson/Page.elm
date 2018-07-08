@@ -10,7 +10,6 @@ import Json.Decode as D
 import Json.Encode as E
 import Lesson.Editor
 import Markdown
-import Navbar
 import Route
 import Task exposing (Task)
 import WebSocket as WS
@@ -23,8 +22,7 @@ import WebSocket as WS
 
 
 type alias Model =
-    { context : Global.Context
-    , slug : String
+    { slug : String
     , chunks : List Chunk
     }
 
@@ -104,7 +102,7 @@ main =
     ]
 ```
     """
-        |> Task.map (Model context slug << chunk [])
+        |> Task.map (Model slug << chunk [])
         |> Task.onError ({- TODO -} toString >> Debug.crash)
 
 
@@ -143,8 +141,8 @@ findFenced input =
             Nothing
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Global.Context -> Msg -> Model -> ( Model, Cmd Msg )
+update context msg model =
     case msg of
         NoOp ->
             pure model
@@ -152,11 +150,11 @@ update msg model =
         Load ->
             ( model
             , Cmd.batch <|
-                List.indexedMap (compileCode model.context) model.chunks
+                List.indexedMap (compileCode context) model.chunks
             )
 
         Edit index code ->
-            editCode index code model
+            editCode context index code model
 
         Compiled index output ->
             let
@@ -166,12 +164,7 @@ update msg model =
             pure { model | chunks = mapCodeAt index identity save model.chunks }
 
         Finish ->
-            ( model
-            , Cmd.batch
-                [ Js.saveProgress model.slug
-                , Route.newUrl Route.Dashboard
-                ]
-            )
+            ( model, Js.saveProgress model.slug )
 
 
 pure : Model -> ( Model, Cmd Msg )
@@ -189,13 +182,13 @@ compileCode context index chunk =
             compile context index elm
 
 
-editCode : Int -> String -> Model -> ( Model, Cmd Msg )
-editCode target new model =
+editCode : Global.Context -> Int -> String -> Model -> ( Model, Cmd Msg )
+editCode context target new model =
     let
         updaded =
             mapCodeAt target
                 (\chunk -> ( chunk, Cmd.none ))
-                (\elm output -> ( Code new output, compile model.context target new ))
+                (\elm output -> ( Code new output, compile context target new ))
                 model.chunks
     in
     ( { model | chunks = List.map Tuple.first updaded }
@@ -225,9 +218,9 @@ mapCodeAt target default found =
                         found elm output
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    WS.listen model.context.runnerApi <|
+subscriptions : Global.Context -> Model -> Sub Msg
+subscriptions context model =
+    WS.listen context.runnerApi <|
         D.decodeString
             (D.map2 Compiled
                 (D.field "id" D.int)
@@ -243,11 +236,23 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        (Navbar.view []
+    div [] <|
+        viewNavbar
             :: dummyLoad
             :: List.indexedMap viewChunk model.chunks
-        )
+
+
+viewNavbar : Html msg
+viewNavbar =
+    nav
+        [ class "navbar is-fixed-top" ]
+        [ div
+            [ class "navbar-brand" ]
+            [ span
+                [ class "navbar-item" ]
+                [ img [ alt "Logo", src "%PUBLIC_URL%/logo.svg" ] [] ]
+            ]
+        ]
 
 
 viewChunk : Int -> Chunk -> Html Msg

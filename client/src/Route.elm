@@ -7,9 +7,7 @@ import UrlParser exposing (..)
 
 
 type Route
-    = Dashboard
-    | Lesson String
-    | Review String
+    = Lesson String
 
 
 fromLocation : Location -> Maybe Route
@@ -23,9 +21,7 @@ fromLocation location =
 parser : Parser (Route -> a) a
 parser =
     oneOf
-        [ map Dashboard <| s "dashboard"
-        , map Lesson <| s "lesson" </> string
-        , map Review <| s "review" </> string
+        [ map Lesson <| s "lesson" </> string
         ]
 
 
@@ -47,11 +43,5 @@ href =
 hash : Route -> String
 hash route =
     case route of
-        Dashboard ->
-            "#/dashboard"
-
         Lesson code ->
             "#/lesson/" ++ code
-
-        Review code ->
-            "#/review/" ++ code
