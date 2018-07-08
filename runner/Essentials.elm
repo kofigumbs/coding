@@ -10,7 +10,11 @@ secretNumber =
 
 
 type Row
-    = Row (List String)
+    = Row (List Cell)
+
+
+type Cell
+    = Cell String
 
 
 table : List Row -> Html.Html Never
@@ -21,33 +25,38 @@ table rows =
 
 
 toHtml : Row -> Html.Html Never
-toHtml (Row strings) =
+toHtml (Row cells) =
     Html.tr [] <|
-        List.map (Html.td [] << List.singleton << Html.text) strings
+        List.map (\(Cell string) -> Html.td [] [ Html.text string ]) cells
+
+
+row : List Cell -> Row
+row =
+    Row
 
 
 row1 : a -> Row
 row1 a =
-    Row [ niceString a ]
+    Row [ cell a ]
 
 
 row2 : a -> b -> Row
 row2 a b =
-    Row [ niceString a, niceString b ]
+    Row [ cell a, cell b ]
 
 
 row3 : a -> b -> c -> Row
 row3 a b c =
-    Row [ niceString a, niceString b, niceString c ]
+    Row [ cell a, cell b, cell c ]
 
 
 row4 : a -> b -> c -> d -> Row
 row4 a b c d =
-    Row [ niceString a, niceString b, niceString c, niceString d ]
+    Row [ cell a, cell b, cell c, cell d ]
 
 
-niceString : a -> String
-niceString a =
+cell : a -> Cell
+cell a =
     let
         attempt =
             toString a
@@ -57,5 +66,6 @@ niceString a =
             |> String.dropRight 1
             |> String.split "\\\""
             |> String.join "\""
+            |> Cell
     else
-        attempt
+        Cell attempt

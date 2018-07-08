@@ -62,32 +62,36 @@ chunk chunks raw =
             List.reverse (Text raw :: chunks)
 
         Just { before, inside, after } ->
-            let
-                fenced =
-                    Code (String.trim inside) Initial
-            in
-            chunk (fenced :: Text before :: chunks) after
+            chunk (Code inside Initial :: Text before :: chunks) after
 
 
 findFenced : String -> Maybe { before : String, inside : String, after : String }
 findFenced input =
-    case ( String.indexes "```elm" input, String.indexes "```" input ) of
-        ( start :: _, _ :: end :: _ ) ->
-            let
-                leftStart =
-                    start + 6
-
-                rightEnd =
-                    String.length input - 3 - end
-            in
-            Just
-                { before = String.left start input
-                , inside = String.slice leftStart end input
-                , after = String.right rightEnd input
-                }
-
-        _ ->
+    case String.indexes "\n```elm\n" input of
+        [] ->
             Nothing
+
+        start :: _ ->
+            case
+                String.indexes "\n```\n" input
+                    |> List.filter (\x -> x > start)
+            of
+                [] ->
+                    Nothing
+
+                end :: _ ->
+                    let
+                        leftStart =
+                            start + 8
+
+                        rightEnd =
+                            String.length input - 5 - end
+                    in
+                    Just
+                        { before = String.left start input
+                        , inside = String.slice leftStart end input
+                        , after = String.right rightEnd input
+                        }
 
 
 update : Global.Context -> Msg -> Model -> ( Model, Cmd Msg )
