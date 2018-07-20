@@ -1,43 +1,38 @@
 module Lesson.Page exposing (Model, Msg, init, subscriptions, update, view)
 
+import Debounce exposing (Debounce)
 import Global
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import Http
-import Js
 import Json.Decode as D
 import Json.Encode as E
 import Lesson.Editor
 import Markdown
-import Route
-import Task exposing (Task)
+import Time
 import WebSocket as WS
 
 
 -- TODO
 --  - Add finished/next button
---  - Debounce compile messages
 --  - Make some more lessons!
 
 
 type alias Model =
-    { slug : String
-    , chunks : List Chunk
+    { chunks : List Chunk
     }
 
 
 type Chunk
     = Text String
-    | Code String Output
+    | Code Editor
 
 
-type Msg
-    = NoOp
-    | Load
-    | Edit Int String
-    | Compiled Int Output
-    | Finish
+type alias Editor =
+    { initialElm : String
+    , output : Output
+    , debounce : Debounce String
+    }
 
 
 type Output
@@ -47,22 +42,85 @@ type Output
     | Unknown
 
 
-init : Global.Context -> String -> Task Never Model
+init : Global.Context -> String -> ( Model, Cmd Msg )
 init context slug =
-    Http.getString ("/lessons/" ++ slug ++ ".md")
-        |> Http.toTask
-        |> Task.map (Model slug << chunk [])
-        |> Task.onError ({- TODO -} toString >> Debug.crash)
+    ( Model []
+    , Http.getString ("/lessons/" ++ slug ++ ".md")
+        |> Http.send
+            (\result ->
+                case result of
+                    Err _ ->
+                        Debug.crash {- TODO -} ""
+
+                    Ok markdown ->
+                        GetChunks markdown
+            )
+    )
 
 
-chunk : List Chunk -> String -> List Chunk
-chunk chunks raw =
+type Msg
+    = NoOp
+    | GetChunks String
+    | Edit Int String
+    | Compiled Int Output
+    | DebounceMsg Int Debounce.Msg
+
+
+update : Global.Context -> Msg -> Model -> ( Model, Cmd Msg )
+update context msg model =
+    case msg of
+        NoOp ->
+            pure model
+
+        GetChunks raw ->
+            applyDebounces <| chunk [] 1 raw
+
+        DebounceMsg index childMsg ->
+            applyDebounces <| mapCodeAt index pure (updateDebounce context index childMsg) model.chunks
+
+        Edit index code ->
+            applyDebounces <| editCode context index code model
+
+        Compiled index output ->
+            pure { model | chunks = mapCodeAt index identity (setOutput output) model.chunks }
+
+
+pure : a -> ( a, Cmd msg )
+pure model =
+    ( model, Cmd.none )
+
+
+applyDebounces : List ( Chunk, Cmd Msg ) -> ( Model, Cmd Msg )
+applyDebounces chunkedCmds =
+    ( Model <| List.map Tuple.first chunkedCmds
+    , Cmd.batch <| List.map Tuple.second chunkedCmds
+    )
+
+
+updateDebounce : Global.Context -> Int -> Debounce.Msg -> Editor -> ( Chunk, Cmd Msg )
+updateDebounce context index msg editor =
+    Debounce.update
+        (debounceConfig index)
+        (Debounce.takeLast (compile context index))
+        msg
+        editor.debounce
+        |> Tuple.mapFirst (\debounce -> Code { editor | debounce = debounce })
+
+
+chunk : List ( Chunk, Cmd Msg ) -> Int -> String -> List ( Chunk, Cmd Msg )
+chunk chunks index raw =
     case findFenced raw of
         Nothing ->
-            List.reverse (Text raw :: chunks)
+            List.reverse (( Text raw, Cmd.none ) :: chunks)
 
         Just { before, inside, after } ->
-            chunk (Code inside Initial :: Text before :: chunks) after
+            let
+                code =
+                    Debounce.init
+                        |> Debounce.push (debounceConfig index) inside
+                        |> Tuple.mapFirst (Code << Editor inside Initial)
+            in
+            chunk (code :: ( Text before, Cmd.none ) :: chunks) (index + 2) after
 
 
 findFenced : String -> Maybe { before : String, inside : String, after : String }
@@ -94,59 +152,22 @@ findFenced input =
                         }
 
 
-update : Global.Context -> Msg -> Model -> ( Model, Cmd Msg )
-update context msg model =
-    case msg of
-        NoOp ->
-            pure model
-
-        Load ->
-            ( model
-            , Cmd.batch <|
-                List.indexedMap (compileCode context) model.chunks
-            )
-
-        Edit index code ->
-            editCode context index code model
-
-        Compiled index output ->
-            let
-                save elm _ =
-                    Code elm output
-            in
-            pure { model | chunks = mapCodeAt index identity save model.chunks }
-
-        Finish ->
-            ( model, Js.saveProgress model.slug )
-
-
-pure : Model -> ( Model, Cmd Msg )
-pure model =
-    ( model, Cmd.none )
-
-
-compileCode : Global.Context -> Int -> Chunk -> Cmd Msg
-compileCode context index chunk =
-    case chunk of
-        Text _ ->
-            Cmd.none
-
-        Code elm _ ->
-            compile context index elm
-
-
-editCode : Global.Context -> Int -> String -> Model -> ( Model, Cmd Msg )
+editCode : Global.Context -> Int -> String -> Model -> List ( Chunk, Cmd Msg )
 editCode context target new model =
-    let
-        updaded =
-            mapCodeAt target
-                (\chunk -> ( chunk, Cmd.none ))
-                (\elm output -> ( Code new output, compile context target new ))
-                model.chunks
-    in
-    ( { model | chunks = List.map Tuple.first updaded }
-    , Cmd.batch <| List.map Tuple.second updaded
-    )
+    mapCodeAt target
+        (\chunk -> ( chunk, Cmd.none ))
+        (\editor ->
+            Debounce.push (debounceConfig target) new editor.debounce
+                |> Tuple.mapFirst (\debounce -> Code { editor | debounce = debounce })
+        )
+        model.chunks
+
+
+debounceConfig : Int -> Debounce.Config Msg
+debounceConfig index =
+    { strategy = Debounce.later (1 * Time.second)
+    , transform = DebounceMsg index
+    }
 
 
 compile : Global.Context -> Int -> String -> Cmd Msg
@@ -156,7 +177,7 @@ compile context id code =
         |> WS.send context.runnerApi
 
 
-mapCodeAt : Int -> (Chunk -> a) -> (String -> Output -> a) -> List Chunk -> List a
+mapCodeAt : Int -> (Chunk -> a) -> (Editor -> a) -> List Chunk -> List a
 mapCodeAt target default found =
     List.indexedMap <|
         \i chunk ->
@@ -167,8 +188,13 @@ mapCodeAt target default found =
                     Text _ ->
                         default chunk
 
-                    Code elm output ->
-                        found elm output
+                    Code editor ->
+                        found editor
+
+
+setOutput : Output -> Editor -> Chunk
+setOutput output editor =
+    Code { editor | output = output }
 
 
 subscriptions : Global.Context -> Model -> Sub Msg
@@ -189,10 +215,7 @@ subscriptions context model =
 
 view : Model -> Html Msg
 view model =
-    div [] <|
-        viewNavbar
-            :: dummyLoad
-            :: List.indexedMap viewChunk model.chunks
+    div [] <| viewNavbar :: List.indexedMap viewChunk model.chunks
 
 
 viewNavbar : Html Msg
@@ -244,12 +267,15 @@ viewChunk index chunk =
                     ]
                 ]
 
-        Code elm output ->
+        Code { initialElm, output } ->
             div
                 [ class "columns is-gapless" ]
-                [ div [ class "column is-6" ]
-                    [ Lesson.Editor.view (Edit index) elm ]
-                , div [ class "column is-6" ] [ viewOutput output ]
+                [ div
+                    [ class "column is-6" ]
+                    [ Lesson.Editor.view (Edit index) initialElm ]
+                , div
+                    [ class "column is-6" ]
+                    [ viewOutput output ]
                 ]
 
 
@@ -289,8 +315,3 @@ viewOutput output =
                 [ strong []
                     [ text "Oops, we messed up somewhere along the line..." ]
                 ]
-
-
-dummyLoad : Html Msg
-dummyLoad =
-    node "style" [ on "load" (D.succeed Load) ] []
