@@ -17,7 +17,6 @@ view toMsg content =
         , A.class "textarea block has-text-white"
         , A.style
             [ ( "font-family", "monospace" )
-            , ( "font-weight", "600" )
             , ( "white-space", "pre" )
             , ( "overflow-wrap", "normal" )
             , ( "background-color", "#2c292d" )

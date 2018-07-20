@@ -111,7 +111,7 @@ chunk : List ( Chunk, Cmd Msg ) -> Int -> String -> List ( Chunk, Cmd Msg )
 chunk chunks index raw =
     case findFenced raw of
         Nothing ->
-            List.reverse (( Text raw, Cmd.none ) :: chunks)
+            List.reverse (pure (Text raw) :: chunks)
 
         Just { before, inside, after } ->
             let
@@ -120,7 +120,7 @@ chunk chunks index raw =
                         |> Debounce.push (debounceConfig index) inside
                         |> Tuple.mapFirst (Code << Editor inside Initial)
             in
-            chunk (code :: ( Text before, Cmd.none ) :: chunks) (index + 2) after
+            chunk (code :: pure (Text before) :: chunks) (index + 2) after
 
 
 findFenced : String -> Maybe { before : String, inside : String, after : String }
@@ -154,13 +154,12 @@ findFenced input =
 
 editCode : Global.Context -> Int -> String -> Model -> List ( Chunk, Cmd Msg )
 editCode context target new model =
-    mapCodeAt target
-        (\chunk -> ( chunk, Cmd.none ))
-        (\editor ->
+    let
+        pushDebounce editor =
             Debounce.push (debounceConfig target) new editor.debounce
                 |> Tuple.mapFirst (\debounce -> Code { editor | debounce = debounce })
-        )
-        model.chunks
+    in
+    mapCodeAt target pure pushDebounce model.chunks
 
 
 debounceConfig : Int -> Debounce.Config Msg
