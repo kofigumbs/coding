@@ -16,12 +16,11 @@ and see the **change reflected immediately on the right**.
 Go ahead and try typing your name into the program!
 
 ```elm
-import Essentials exposing (table, row2)
+greeting =
+  "Hello"
 
-main =
-  table
-    [ row2 "Hello" "__YOUR NAME HERE__"
-    ]
+yourNameHere =
+  "???"
 ```
 
 # A quick warmup
@@ -36,14 +35,12 @@ There is a `secretNumber` that we need you to guess.
 Here's a hint: it's between 1 and 10.
 
 ```elm
-import Essentials exposing (table, row2, secretNumber)
-
 guess =
   0
 
-main =
-  table
-    [ row2 "Your guess" guess
-    , row2 "Correct?" (secretNumber == guess)
-    ]
+youAreCorrect =
+  if guess == HiddenContent.secretNumber then
+    "Yes"
+  else
+    "No"
 ```

@@ -1,6 +1,9 @@
 module Lesson.Page exposing (Model, Msg, init, subscriptions, update, view)
 
 import Debounce exposing (Debounce)
+import Elm.Parser
+import Elm.Processing
+import Elm.Syntax.Declaration exposing (Declaration(..))
 import Global
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -11,11 +14,6 @@ import Lesson.Editor
 import Markdown
 import Time
 import WebSocket as WS
-
-
--- TODO
---  - Add finished/next button
---  - Make some more lessons!
 
 
 type alias Model =
@@ -101,7 +99,7 @@ updateDebounce : Global.Context -> Int -> Debounce.Msg -> Editor -> ( Chunk, Cmd
 updateDebounce context index msg editor =
     Debounce.update
         (debounceConfig index)
-        (Debounce.takeLast (compile context index))
+        (Debounce.takeLast (prefixCode >> compile context index))
         msg
         editor.debounce
         |> Tuple.mapFirst (\debounce -> Code { editor | debounce = debounce })
@@ -171,9 +169,50 @@ debounceConfig index =
 
 compile : Global.Context -> Int -> String -> Cmd Msg
 compile context id code =
+    case
+        Elm.Parser.parse code
+            |> Result.map (Elm.Processing.process Elm.Processing.init)
+    of
+        Err reason ->
+            let
+                _ =
+                    Debug.log "ELM SYNTAX ERROR" reason
+            in
+            compileRemote context id code
+
+        Ok { declarations } ->
+            compileRemote context id <|
+                code
+                    ++ "\n\nmain = HiddenContent.drawTable ["
+                    ++ String.join "," (List.filterMap showDeclaraion declarations)
+                    ++ "]"
+
+
+showDeclaraion : ( range, Declaration ) -> Maybe String
+showDeclaraion ( _, declaration ) =
+    case declaration of
+        FuncDecl { declaration } ->
+            Just <|
+                "[\""
+                    ++ declaration.name.value
+                    ++ "\", Basics.toString "
+                    ++ declaration.name.value
+                    ++ "]"
+
+        _ ->
+            Nothing
+
+
+compileRemote : Global.Context -> Int -> String -> Cmd Msg
+compileRemote context id code =
     E.object [ ( "id", E.int id ), ( "elm", E.string code ) ]
         |> E.encode 0
         |> WS.send context.runnerApi
+
+
+prefixCode : String -> String
+prefixCode elm =
+    "module Main exposing (..)\nimport HiddenContent\n" ++ elm
 
 
 mapCodeAt : Int -> (Chunk -> a) -> (Editor -> a) -> List Chunk -> List a
@@ -214,42 +253,7 @@ subscriptions context model =
 
 view : Model -> Html Msg
 view model =
-    div [] <| viewNavbar :: List.indexedMap viewChunk model.chunks
-
-
-viewNavbar : Html Msg
-viewNavbar =
-    nav
-        [ class "navbar is-fixed-top" ]
-        [ div
-            [ class "navbar-brand" ]
-            [ span
-                [ class "navbar-item" ]
-                [ img [ alt "Logo", src "%PUBLIC_URL%/logo.svg" ] [] ]
-            ]
-        , div
-            [ class "navbar-menu is-active" ]
-            [ div
-                [ class "navbar-end" ]
-                [ div [ class "navbar-item" ] [ viewSearch ] ]
-            ]
-        ]
-
-
-viewSearch : Html Msg
-viewSearch =
-    div
-        [ class "field" ]
-        [ div
-            [ class "control" ]
-            [ input
-                [ class "input is-primary is-medium"
-                , type_ "text"
-                , placeholder "Find hints or lessons..."
-                ]
-                []
-            ]
-        ]
+    div [] <| List.indexedMap viewChunk model.chunks
 
 
 viewChunk : Int -> Chunk -> Html Msg
