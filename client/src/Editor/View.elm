@@ -80,14 +80,19 @@ update msg state =
                 (Debounce.takeLast (prefixCode >> compile state))
                 childMsg
                 state.debounce
-                |> Tuple.mapFirst (\debounce -> { state | debounce = debounce })
+                |> applyDebouncesTo state
 
         Edit new ->
             Debounce.push debounceConfig new state.debounce
-                |> Tuple.mapFirst (\debounce -> { state | debounce = debounce })
+                |> applyDebouncesTo state
 
         Compiled output ->
             ( { state | output = output }, Cmd.none )
+
+
+applyDebouncesTo : State -> ( Debounce String, Cmd Msg ) -> ( State, Cmd Msg )
+applyDebouncesTo state ( debounce, cmds ) =
+    ( { state | debounce = debounce }, cmds )
 
 
 debounceConfig : Debounce.Config Msg
