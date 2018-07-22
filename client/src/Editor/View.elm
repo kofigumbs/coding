@@ -77,7 +77,7 @@ update msg state =
 
         DebounceMsg childMsg ->
             Debounce.update debounceConfig
-                (Debounce.takeLast (prefixCode >> compile state.flags state.id))
+                (Debounce.takeLast (prefixCode >> compile state))
                 childMsg
                 state.debounce
                 |> Tuple.mapFirst (\debounce -> { state | debounce = debounce })
@@ -85,20 +85,9 @@ update msg state =
         Edit new ->
             Debounce.push debounceConfig new state.debounce
                 |> Tuple.mapFirst (\debounce -> { state | debounce = debounce })
-                |> applyTracking new
 
         Compiled output ->
             ( { state | output = output }, Cmd.none )
-
-
-applyTracking : String -> ( State, Cmd Msg ) -> ( State, Cmd Msg )
-applyTracking new ( model, cmds ) =
-    case model.tracking of
-        NoTracking ->
-            ( model, cmds )
-
-        TrackLocal key ->
-            ( model, Cmd.batch [ cmds, Js.saveLocal key (E.string new) ] )
 
 
 debounceConfig : Debounce.Config Msg
@@ -111,8 +100,8 @@ prefixCode elm =
     "module Main exposing (..)\nimport HiddenContent\n" ++ elm
 
 
-compile : Js.Flags -> Int -> String -> Cmd Msg
-compile flags id code =
+compile : State -> String -> Cmd Msg
+compile state code =
     case
         Elm.Parser.parse code
             |> Result.map (Elm.Processing.process Elm.Processing.init)
@@ -122,10 +111,10 @@ compile flags id code =
                 _ =
                     Debug.log "ELM SYNTAX ERROR" reason
             in
-            compileRemote flags id code
+            compileRemote state code
 
         Ok { declarations } ->
-            compileRemote flags id <|
+            compileRemote state <|
                 code
                     ++ "\n\nmain = HiddenContent.drawTable ["
                     ++ String.join "," (List.filterMap showDeclaraion declarations)
@@ -147,11 +136,19 @@ showDeclaraion ( _, declaration ) =
             Nothing
 
 
-compileRemote : Js.Flags -> Int -> String -> Cmd Msg
-compileRemote flags id code =
-    E.object [ ( "id", E.int id ), ( "elm", E.string code ) ]
-        |> E.encode 0
-        |> WS.send flags.runnerApi
+compileRemote : State -> String -> Cmd Msg
+compileRemote { flags, tracking, id } code =
+    Cmd.batch
+        [ E.object [ ( "id", E.int id ), ( "elm", E.string code ) ]
+            |> E.encode 0
+            |> WS.send flags.runnerApi
+        , case tracking of
+            NoTracking ->
+                Cmd.none
+
+            TrackLocal key ->
+                Js.saveLocal key (E.string code)
+        ]
 
 
 subscriptions : State -> Sub Msg
