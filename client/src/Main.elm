@@ -1,30 +1,30 @@
 module Main exposing (..)
 
-import Global
 import Html
+import Js
 import Lesson.Page
 
 
 type alias Model =
-    { context : Global.Context
+    { flags : Js.Flags
     , lessonPage : Lesson.Page.Model
     }
 
 
-init : Global.Context -> ( Model, Cmd Lesson.Page.Msg )
-init context =
+init : Js.Flags -> ( Model, Cmd Lesson.Page.Msg )
+init flags =
     let
         ( lessonPage, cmds ) =
-            Lesson.Page.init context "001-welcome"
+            Lesson.Page.init flags "001-welcome"
     in
-    ( Model context lessonPage, cmds )
+    ( Model flags lessonPage, cmds )
 
 
 update : Lesson.Page.Msg -> Model -> ( Model, Cmd Lesson.Page.Msg )
 update msg model =
     let
         ( lessonPage, cmds ) =
-            Lesson.Page.update model.context msg model.lessonPage
+            Lesson.Page.update msg model.lessonPage
     in
     ( { model | lessonPage = lessonPage }, cmds )
 
@@ -36,10 +36,10 @@ view model =
 
 subscriptions : Model -> Sub Lesson.Page.Msg
 subscriptions model =
-    Lesson.Page.subscriptions model.context model.lessonPage
+    Lesson.Page.subscriptions model.lessonPage
 
 
-main : Program Global.Context Model Lesson.Page.Msg
+main : Program Js.Flags Model Lesson.Page.Msg
 main =
     Html.programWithFlags
         { init = init

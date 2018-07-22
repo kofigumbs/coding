@@ -4,10 +4,10 @@ import Debounce exposing (Debounce)
 import Elm.Parser
 import Elm.Processing
 import Elm.Syntax.Declaration exposing (Declaration(..))
-import Global
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
+import Js
 import Json.Decode as D
 import Json.Encode as E
 import Lesson.Editor
@@ -17,7 +17,8 @@ import WebSocket as WS
 
 
 type alias Model =
-    { chunks : List Chunk
+    { flags : Js.Flags
+    , chunks : List Chunk
     }
 
 
@@ -40,9 +41,9 @@ type Output
     | Unknown
 
 
-init : Global.Context -> String -> ( Model, Cmd Msg )
-init context slug =
-    ( Model []
+init : Js.Flags -> String -> ( Model, Cmd Msg )
+init flags slug =
+    ( Model flags []
     , Http.getString ("/lessons/" ++ slug ++ ".md")
         |> Http.send
             (\result ->
@@ -64,20 +65,23 @@ type Msg
     | DebounceMsg Int Debounce.Msg
 
 
-update : Global.Context -> Msg -> Model -> ( Model, Cmd Msg )
-update context msg model =
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
     case msg of
         NoOp ->
             pure model
 
         GetChunks raw ->
-            applyDebounces <| chunk [] 1 raw
+            chunk [] 1 raw
+                |> applyDebounces model.flags
 
         DebounceMsg index childMsg ->
-            applyDebounces <| mapCodeAt index pure (updateDebounce context index childMsg) model.chunks
+            mapCodeAt index pure (updateDebounce model.flags index childMsg) model.chunks
+                |> applyDebounces model.flags
 
         Edit index code ->
-            applyDebounces <| editCode context index code model
+            editCode model.flags index code model
+                |> applyDebounces model.flags
 
         Compiled index output ->
             pure { model | chunks = mapCodeAt index identity (setOutput output) model.chunks }
@@ -88,18 +92,18 @@ pure model =
     ( model, Cmd.none )
 
 
-applyDebounces : List ( Chunk, Cmd Msg ) -> ( Model, Cmd Msg )
-applyDebounces chunkedCmds =
-    ( Model <| List.map Tuple.first chunkedCmds
+applyDebounces : Js.Flags -> List ( Chunk, Cmd Msg ) -> ( Model, Cmd Msg )
+applyDebounces flags chunkedCmds =
+    ( Model flags <| List.map Tuple.first chunkedCmds
     , Cmd.batch <| List.map Tuple.second chunkedCmds
     )
 
 
-updateDebounce : Global.Context -> Int -> Debounce.Msg -> Editor -> ( Chunk, Cmd Msg )
-updateDebounce context index msg editor =
+updateDebounce : Js.Flags -> Int -> Debounce.Msg -> Editor -> ( Chunk, Cmd Msg )
+updateDebounce flags index msg editor =
     Debounce.update
         (debounceConfig index)
-        (Debounce.takeLast (prefixCode >> compile context index))
+        (Debounce.takeLast (prefixCode >> compile flags index))
         msg
         editor.debounce
         |> Tuple.mapFirst (\debounce -> Code { editor | debounce = debounce })
@@ -150,8 +154,8 @@ findFenced input =
                         }
 
 
-editCode : Global.Context -> Int -> String -> Model -> List ( Chunk, Cmd Msg )
-editCode context target new model =
+editCode : Js.Flags -> Int -> String -> Model -> List ( Chunk, Cmd Msg )
+editCode flags target new model =
     let
         pushDebounce editor =
             Debounce.push (debounceConfig target) new editor.debounce
@@ -167,8 +171,8 @@ debounceConfig index =
     }
 
 
-compile : Global.Context -> Int -> String -> Cmd Msg
-compile context id code =
+compile : Js.Flags -> Int -> String -> Cmd Msg
+compile flags id code =
     case
         Elm.Parser.parse code
             |> Result.map (Elm.Processing.process Elm.Processing.init)
@@ -178,10 +182,10 @@ compile context id code =
                 _ =
                     Debug.log "ELM SYNTAX ERROR" reason
             in
-            compileRemote context id code
+            compileRemote flags id code
 
         Ok { declarations } ->
-            compileRemote context id <|
+            compileRemote flags id <|
                 code
                     ++ "\n\nmain = HiddenContent.drawTable ["
                     ++ String.join "," (List.filterMap showDeclaraion declarations)
@@ -203,11 +207,11 @@ showDeclaraion ( _, declaration ) =
             Nothing
 
 
-compileRemote : Global.Context -> Int -> String -> Cmd Msg
-compileRemote context id code =
+compileRemote : Js.Flags -> Int -> String -> Cmd Msg
+compileRemote flags id code =
     E.object [ ( "id", E.int id ), ( "elm", E.string code ) ]
         |> E.encode 0
-        |> WS.send context.runnerApi
+        |> WS.send flags.runnerApi
 
 
 prefixCode : String -> String
@@ -235,9 +239,9 @@ setOutput output editor =
     Code { editor | output = output }
 
 
-subscriptions : Global.Context -> Model -> Sub Msg
-subscriptions context model =
-    WS.listen context.runnerApi <|
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    WS.listen model.flags.runnerApi <|
         D.decodeString
             (D.map2 Compiled
                 (D.field "id" D.int)

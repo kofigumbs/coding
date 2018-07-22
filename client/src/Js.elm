@@ -1,7 +1,12 @@
-port module Js exposing (newUser, saveProgress)
+port module Js exposing (Flags, newUser, saveProgress)
 
 import Json.Decode as D
 import Json.Encode as E
+
+
+type alias Flags =
+    { runnerApi : String
+    }
 
 
 saveProgress : String -> Cmd msg
