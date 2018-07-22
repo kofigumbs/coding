@@ -1,4 +1,4 @@
-module Editor.View exposing (Msg, State, init, subscriptions, update, view)
+module Editor.View exposing (Msg, State, Tracking(..), init, subscriptions, update, view)
 
 import Debounce exposing (Debounce)
 import Elm.Parser
@@ -20,7 +20,13 @@ type alias State =
     , initialElm : String
     , output : Output
     , debounce : Debounce String
+    , tracking : Tracking
     }
+
+
+type Tracking
+    = TrackLocal String
+    | NoTracking
 
 
 type Output
@@ -30,9 +36,18 @@ type Output
     | Unknown
 
 
-init : Js.Flags -> Int -> String -> ( State, Cmd Msg )
-init flags id initialElm =
+init : Js.Flags -> Tracking -> Int -> String -> ( State, Cmd Msg )
+init flags tracking id defaultElm =
     let
+        initialElm =
+            case tracking of
+                NoTracking ->
+                    defaultElm
+
+                TrackLocal key ->
+                    D.decodeValue (D.field key D.string) flags.localStorage
+                        |> Result.withDefault defaultElm
+
         ( debounce, cmds ) =
             Debounce.push debounceConfig initialElm Debounce.init
     in
@@ -41,6 +56,7 @@ init flags id initialElm =
       , initialElm = initialElm
       , output = Initial
       , debounce = debounce
+      , tracking = tracking
       }
     , cmds
     )
@@ -69,16 +85,30 @@ update msg state =
         Edit new ->
             Debounce.push debounceConfig new state.debounce
                 |> Tuple.mapFirst (\debounce -> { state | debounce = debounce })
+                |> applyTracking new
 
         Compiled output ->
             ( { state | output = output }, Cmd.none )
 
 
+applyTracking : String -> ( State, Cmd Msg ) -> ( State, Cmd Msg )
+applyTracking new ( model, cmds ) =
+    case model.tracking of
+        NoTracking ->
+            ( model, cmds )
+
+        TrackLocal key ->
+            ( model, Cmd.batch [ cmds, Js.saveLocal key (E.string new) ] )
+
+
 debounceConfig : Debounce.Config Msg
 debounceConfig =
-    { strategy = Debounce.later (1 * Time.second)
-    , transform = DebounceMsg
-    }
+    { strategy = Debounce.later (0.5 * Time.second), transform = DebounceMsg }
+
+
+prefixCode : String -> String
+prefixCode elm =
+    "module Main exposing (..)\nimport HiddenContent\n" ++ elm
 
 
 compile : Js.Flags -> Int -> String -> Cmd Msg
@@ -122,11 +152,6 @@ compileRemote flags id code =
     E.object [ ( "id", E.int id ), ( "elm", E.string code ) ]
         |> E.encode 0
         |> WS.send flags.runnerApi
-
-
-prefixCode : String -> String
-prefixCode elm =
-    "module Main exposing (..)\nimport HiddenContent\n" ++ elm
 
 
 subscriptions : State -> Sub Msg

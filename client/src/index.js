@@ -3,8 +3,8 @@ import './main.css';
 import Elm from './Main.elm';
 import registerServiceWorker from './registerServiceWorker';
 
-const getProgress = () => {
-  return JSON.parse(localStorage.getItem("user-progress") || "[]");
+const getLocals = () => {
+  return JSON.parse(localStorage.getItem("locals") || "{}");
 };
 
 const runnerApi =
@@ -14,18 +14,17 @@ const runnerApi =
 
 const app = Elm.Main.embed(document.getElementById('root'), {
   runnerApi: runnerApi,
-  user: getProgress(),
+  localStorage: getLocals(),
 });
 
-// app.ports.outgoing.subscribe(msg => {
-//   switch (msg.tag) {
-//     case "SAVE_PROGRESS":
-//       const progress = getProgress();
-//       progress.push(msg.lesson);
-//       localStorage.setItem("user-progress", JSON.stringify(progress));
-//       app.ports.incoming.send({ tag: "NEW_USER", user: progress });
-//       return;
-//   }
-// });
+app.ports.outgoing.subscribe(msg => {
+  switch (msg.tag) {
+    case "SAVE_LOCAL":
+      var locals = getLocals();
+      locals[msg.key] = msg.value;
+      localStorage.setItem("locals", JSON.stringify(locals));
+      return;
+  }
+});
 
 registerServiceWorker();

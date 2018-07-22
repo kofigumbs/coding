@@ -82,7 +82,8 @@ chunk flags chunks index raw =
         Just { before, inside, after } ->
             let
                 code =
-                    Tuple.mapFirst Code <| Editor.View.init flags index inside
+                    Tuple.mapFirst Code <|
+                        Editor.View.init flags Editor.View.NoTracking index inside
             in
             chunk flags (code :: pure (Text before) :: chunks) (index + 2) after
 

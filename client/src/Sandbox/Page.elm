@@ -13,7 +13,11 @@ type alias Model =
 
 init : Js.Flags -> ( Model, Cmd Msg )
 init flags =
-    applyEdits <| Editor.View.init flags 0 "someVariable = \"Hello, World!\""
+    applyEdits <|
+        Editor.View.init flags
+            (Editor.View.TrackLocal "sandbox")
+            0
+            "someVariable = \"Hello, World!\""
 
 
 type Msg
