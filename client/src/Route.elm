@@ -8,6 +8,7 @@ import UrlParser exposing (..)
 
 type Route
     = Lesson String
+    | Sandbox
 
 
 fromLocation : Location -> Maybe Route
@@ -22,6 +23,7 @@ parser : Parser (Route -> a) a
 parser =
     oneOf
         [ map Lesson <| s "lesson" </> string
+        , map Sandbox <| s "sandbox"
         ]
 
 
@@ -45,3 +47,6 @@ hash route =
     case route of
         Lesson code ->
             "#/lesson/" ++ code
+
+        Sandbox ->
+            "#/sandbox"
