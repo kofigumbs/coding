@@ -77,7 +77,7 @@ update msg state =
 
         DebounceMsg childMsg ->
             Debounce.update debounceConfig
-                (Debounce.takeLast (prefixCode >> compile state))
+                (Debounce.takeLast (\code -> compile state code (prefixCode code)))
                 childMsg
                 state.debounce
                 |> applyDebouncesTo state
@@ -105,10 +105,10 @@ prefixCode elm =
     "module Main exposing (..)\nimport HiddenContent\n" ++ elm
 
 
-compile : State -> String -> Cmd Msg
-compile state code =
+compile : State -> String -> String -> Cmd Msg
+compile state raw clean =
     case
-        Elm.Parser.parse code
+        Elm.Parser.parse clean
             |> Result.map (Elm.Processing.process Elm.Processing.init)
     of
         Err reason ->
@@ -116,11 +116,11 @@ compile state code =
                 _ =
                     Debug.log "ELM SYNTAX ERROR" reason
             in
-            compileRemote state code
+            compileRemote state raw clean
 
         Ok { declarations } ->
-            compileRemote state <|
-                code
+            compileRemote state raw <|
+                clean
                     ++ "\n\nmain = HiddenContent.drawTable ["
                     ++ String.join "," (List.filterMap showDeclaraion declarations)
                     ++ "]"
@@ -141,10 +141,10 @@ showDeclaraion ( _, declaration ) =
             Nothing
 
 
-compileRemote : State -> String -> Cmd Msg
-compileRemote { flags, tracking, id } code =
+compileRemote : State -> String -> String -> Cmd Msg
+compileRemote { flags, tracking, id } raw clean =
     Cmd.batch
-        [ E.object [ ( "id", E.int id ), ( "elm", E.string code ) ]
+        [ E.object [ ( "id", E.int id ), ( "elm", E.string clean ) ]
             |> E.encode 0
             |> WS.send flags.runnerApi
         , case tracking of
@@ -152,7 +152,7 @@ compileRemote { flags, tracking, id } code =
                 Cmd.none
 
             TrackLocal key ->
-                Js.saveLocal key (E.string code)
+                Js.saveLocal key (E.string raw)
         ]
 
 
@@ -172,6 +172,7 @@ subscriptions state =
                     (\( id, output ) ->
                         if id == state.id then
                             D.succeed (Compiled output)
+
                         else
                             D.fail ""
                     )
