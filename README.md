@@ -2,11 +2,10 @@
 
 ### Start client
 
-Requires create-elm-app and Elm 0.18
-
 ```
 cd client
-elm-app start
+npm install
+$(npm bin)/elm-app start
 ```
 
 
@@ -14,5 +13,6 @@ elm-app start
 
 ```
 cd server
-npm start
+npm install
+$(npm bin)/npm start
 ```
