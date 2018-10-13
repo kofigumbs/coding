@@ -1,51 +1,46 @@
-// SETUP MONACO EDITOR
-
-var EDITOR_NODE = "code-editor";
-var Editor = Object.create(HTMLElement.prototype);
-
-Editor.createdCallback = function() {
-  var element = this;
-  element.__editor = monaco.editor.create(element, {
+function newEditor(app, id, value) {
+  const element = document.getElementById(id);
+  const editor = monaco.editor.create(element, {
     language: "elm",
+    theme: "vs-dark",
     minimap: { enabled: false },
     scrollBeyondLastLine: false,
+    value: value,
   });
 
-  // Set editor size to that of container
-  requestAnimationFrame(function() {
-    element.setAttribute("style", "flex-grow: 1");
-    element.__editor.layout({
-      width: element.offsetWidth,
-      height: element.offsetHeight,
-    });
-    element.setAttribute("style", "max-height: 0");
+  editor.onDidChangeModelContent(function() {
+    element.dispatchEvent(new CustomEvent("editor-change", {
+      detail: editor.getValue(),
+    }));
   });
 
-  // Listen for typing
-  element.__editor.onDidChangeModelContent(function(x) {
-    element.dispatchEvent(
-      new CustomEvent("editor-change", { detail: element.__editor.getValue() })
-    );
-  });
-};
-
-Editor.attributeChangedCallback = function(name, oldValue, newValue) {
-  switch (name) {
-    case 'data-value':
-      if (newValue !== this.__editor.getValue()) {
-        this.__editor.setValue(newValue);
-      }
-      break;
-  }
+  element._editor = editor;
+  resetEditorLayout(element);
 }
 
-document.registerElement(EDITOR_NODE, { prototype: Editor });
+function resizeEditor(id) {
+  resetEditorLayout(document.getElementById(id));
+}
 
-
-// SETUP ELM APP
+function resetEditorLayout(element) {
+  element._editor.layout({
+    width: element.parentElement.offsetWidth,
+    height: element.parentElement.offsetHeight,
+  });
+}
 
 window.onload = function() {
-  window.app = Elm.Main.init({
-    flags: { editorNode: EDITOR_NODE },
+  const app = Elm.Main.init();
+  app.ports.toJs.subscribe(function(msg) {
+    switch(msg.tag) {
+      case "NEW_EDITOR":
+        requestAnimationFrame(function() {
+          newEditor(app, msg.id, msg.value);
+        });
+        break;
+      case "RESIZE_EDITORS":
+        resizeEditor(msg.id);
+        break;
+    }
   });
 };

@@ -1,93 +1,101 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
+import Browser.Events
 import Editor
-import Element exposing (..)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Json.Encode as E
 
 
 type alias Model =
-    { editorNode : String
-    , editorValue : String
+    { editorValue : String
     }
 
 
-type alias Flags =
-    { editorNode : String }
-
-
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    ( { editorNode = flags.editorNode
-      , editorValue = "main =\n    text \"Hello, World!\"\n"
+init : () -> ( Model, Cmd Msg )
+init () =
+    ( { editorValue = defaultEditorValue
       }
-    , Cmd.none
+    , send "NEW_EDITOR"
+        [ ( "id", E.string codeEditorId )
+        , ( "value", E.string defaultEditorValue )
+        ]
     )
 
 
+defaultEditorValue : String
+defaultEditorValue =
+    "main =\n    text \"Hello, World!\"\n"
+
+
 type Msg
-    = NoOp
-    | SetValue String
+    = SetValue String
+    | Resize
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            s model
-
         SetValue value ->
-            s { model | editorValue = value }
+            ( { model | editorValue = value }, Cmd.none )
+
+        Resize ->
+            ( model, send "RESIZE_EDITORS" [ ( "id", E.string codeEditorId ) ] )
 
 
-s : Model -> ( Model, Cmd Msg )
-s model =
-    ( model, Cmd.none )
+send : String -> List ( String, E.Value ) -> Cmd msg
+send tag data =
+    toJs <| E.object (( "tag", E.string tag ) :: data)
 
 
-view : Model -> Element Msg
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Browser.Events.onResize (\_ _ -> Resize)
+
+
+view : Model -> Html Msg
 view model =
-    row [ width fill, height fill ]
-        [ column
-            [ height fill, width (fillPortion 2) ]
-            [ el [ height (fillPortion 2), width fill ] (viewEditor model)
-            , el [ height (fillPortion 1), width fill ] (viewHint model)
-            ]
-        , el [ height fill, width (fillPortion 1) ] (viewOutput model)
+    main_
+        [ style "min-height" "100vh" ]
+        [ halfPanel [ viewEditor model ]
+        , halfPanel [ viewLessonOutput model ]
         ]
 
 
-viewEditor : Model -> Element Msg
+viewEditor : Model -> Html Msg
 viewEditor model =
-    html <|
-        Editor.view
-            { node = model.editorNode
-            , onInput = SetValue
-            , value = model.editorValue
-            }
+    Editor.view { id = codeEditorId, onInput = SetValue }
 
 
-viewHint : Model -> Element Msg
-viewHint model =
-    text "Hint"
-
-
-viewOutput : Model -> Element Msg
-viewOutput model =
-    text "Output"
+viewLessonOutput : Model -> Html Msg
+viewLessonOutput model =
+    div [ class "wysiwyg" ] [ p [] [ text "Output" ] ]
 
 
 viewDocument : Model -> Browser.Document Msg
 viewDocument model =
-    { title = "Test"
-    , body = [ Element.layout [] (view model) ]
-    }
+    { title = "Coding", body = [ view model ] }
 
 
-main : Program Flags Model Msg
+halfPanel : List (Html msg) -> Html msg
+halfPanel =
+    section [ style "width" "50%", style "height" "100vh", style "float" "left" ]
+
+
+codeEditorId : String
+codeEditorId =
+    "main-code-editor"
+
+
+port toJs : E.Value -> Cmd msg
+
+
+main : Program () Model Msg
 main =
     Browser.document
         { init = init
         , update = update
+        , subscriptions = subscriptions
         , view = viewDocument
-        , subscriptions = \_ -> Sub.none
         }
