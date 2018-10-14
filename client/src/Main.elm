@@ -6,21 +6,29 @@ import Editor
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Json.Encode as E
+import Loading
+import Markdown
 
 
 type alias Model =
-    { editorValue : String
+    { lesson : String
+    , output : Output
+    , editorValue : String
     }
+
+
+type Output
+    = Loading
+    | Html String
 
 
 init : () -> ( Model, Cmd Msg )
 init () =
-    ( { editorValue = defaultEditorValue
+    ( { lesson = "### Hello, World!"
+      , output = Loading
+      , editorValue = defaultEditorValue
       }
-    , send "NEW_EDITOR"
-        [ ( "id", E.string codeEditorId )
-        , ( "value", E.string defaultEditorValue )
-        ]
+    , send "NEW_EDITOR" [ ( "id", E.string codeEditorId ) ]
     )
 
 
@@ -58,21 +66,37 @@ view : Model -> Html Msg
 view model =
     main_
         [ style "min-height" "100vh" ]
-        [ halfPanel [ viewLessonOutput model ]
-        , halfPanel [ viewEditor model ]
+        [ halfPanel [ viewLesson model.lesson, viewOutput model.output ]
+        , halfPanel [ viewEditor model.editorValue ]
         ]
 
 
-viewEditor : Model -> Html Msg
-viewEditor model =
-    Editor.view { id = codeEditorId, onInput = NewCode }
+viewLesson : String -> Html Msg
+viewLesson =
+    Markdown.toHtml [ class "wysiwyg", style "padding" "1em" ]
 
 
-viewLessonOutput : Model -> Html Msg
-viewLessonOutput model =
-    div [ class "wysiwyg", style "padding" "0 1em" ]
-        [ p [] [ text "Output" ]
-        ]
+viewOutput : Output -> Html Msg
+viewOutput output =
+    case output of
+        Loading ->
+            Loading.view
+
+        Html raw ->
+            iframe
+                [ srcdoc raw
+                , sandbox <|
+                    "allow-scripts"
+                        ++ " allow-popups"
+                        ++ " allow-popups-to-escape-sandbox"
+                , style "width" "100%"
+                ]
+                []
+
+
+viewEditor : String -> Html Msg
+viewEditor editorValue =
+    Editor.view { id = codeEditorId, value = editorValue, onInput = NewCode }
 
 
 viewDocument : Model -> Browser.Document Msg

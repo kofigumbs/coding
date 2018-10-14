@@ -1,11 +1,11 @@
-function newEditor(app, id, value) {
+function newEditor(app, id) {
   const element = document.getElementById(id);
   element.editor = monaco.editor.create(element, {
     language: "elm",
     theme: "vs-dark",
     minimap: { enabled: false },
     scrollBeyondLastLine: false,
-    value: value,
+    value: element.dataset.value,
   });
 
   element.editor.onDidChangeModelContent(function() {
@@ -29,12 +29,15 @@ function resetEditorLayout(element) {
 }
 
 window.onload = function() {
-  const app = Elm.Main.init();
+  const flags = location.hostname === "localhost"
+    ? { runnerUrl : "localhost:3001" }
+    : { runnerUrl : "https://excel-to-code--runner.herokuapp.com" };
+  const app = Elm.Main.init({ flags: flags });
   app.ports.toJs.subscribe(function(msg) {
     switch(msg.tag) {
       case "NEW_EDITOR":
         requestAnimationFrame(function() {
-          newEditor(app, msg.id, msg.value);
+          newEditor(app, msg.id);
         });
         break;
       case "RESIZE_EDITORS":
