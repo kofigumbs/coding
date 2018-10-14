@@ -12,10 +12,10 @@ const toHtml = js => `
 <html>
   <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
+    <link rel="stylesheet" href="https://raw.githubusercontent.com/jgthms/wysiwyg.css/master/wysiwyg.css">
     <script type="text/javascript">${js}</script>
   </head>
-  <body></body>
+  <body class="wysiwyg"></body>
   <script type="text/javascript">Elm.Main.fullscreen();</script>
 </html>
 `;
