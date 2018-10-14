@@ -1,6 +1,6 @@
 function newEditor(app, id, value) {
   const element = document.getElementById(id);
-  const editor = monaco.editor.create(element, {
+  element.editor = monaco.editor.create(element, {
     language: "elm",
     theme: "vs-dark",
     minimap: { enabled: false },
@@ -8,13 +8,12 @@ function newEditor(app, id, value) {
     value: value,
   });
 
-  editor.onDidChangeModelContent(function() {
+  element.editor.onDidChangeModelContent(function() {
     element.dispatchEvent(new CustomEvent("editor-change", {
-      detail: editor.getValue(),
+      detail: element.editor.getValue(),
     }));
   });
 
-  element._editor = editor;
   resetEditorLayout(element);
 }
 
@@ -23,7 +22,7 @@ function resizeEditor(id) {
 }
 
 function resetEditorLayout(element) {
-  element._editor.layout({
+  element.editor.layout({
     width: element.parentElement.offsetWidth,
     height: element.parentElement.offsetHeight,
   });

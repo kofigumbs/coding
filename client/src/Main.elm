@@ -30,14 +30,14 @@ defaultEditorValue =
 
 
 type Msg
-    = SetValue String
+    = NewCode String
     | Resize
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SetValue value ->
+        NewCode value ->
             ( { model | editorValue = value }, Cmd.none )
 
         Resize ->
@@ -58,19 +58,21 @@ view : Model -> Html Msg
 view model =
     main_
         [ style "min-height" "100vh" ]
-        [ halfPanel [ viewEditor model ]
-        , halfPanel [ viewLessonOutput model ]
+        [ halfPanel [ viewLessonOutput model ]
+        , halfPanel [ viewEditor model ]
         ]
 
 
 viewEditor : Model -> Html Msg
 viewEditor model =
-    Editor.view { id = codeEditorId, onInput = SetValue }
+    Editor.view { id = codeEditorId, onInput = NewCode }
 
 
 viewLessonOutput : Model -> Html Msg
 viewLessonOutput model =
-    div [ class "wysiwyg" ] [ p [] [ text "Output" ] ]
+    div [ class "wysiwyg", style "padding" "0 1em" ]
+        [ p [] [ text "Output" ]
+        ]
 
 
 viewDocument : Model -> Browser.Document Msg
@@ -80,7 +82,11 @@ viewDocument model =
 
 halfPanel : List (Html msg) -> Html msg
 halfPanel =
-    section [ style "width" "50%", style "height" "100vh", style "float" "left" ]
+    section
+        [ style "width" "50%"
+        , style "height" "100vh"
+        , style "float" "left"
+        ]
 
 
 codeEditorId : String
