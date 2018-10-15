@@ -2,6 +2,7 @@ port module Main exposing (main)
 
 import Browser
 import Browser.Events
+import Compile
 import Editor
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -11,9 +12,10 @@ import Markdown
 
 
 type alias Model =
-    { lesson : String
+    { runner : String
+    , lesson : String
     , output : Output
-    , editorValue : String
+    , compile : Compile.State
     }
 
 
@@ -22,34 +24,63 @@ type Output
     | Html String
 
 
-init : () -> ( Model, Cmd Msg )
-init () =
+type alias Flags =
+    { runner : String }
+
+
+init : Flags -> ( Model, Cmd Msg )
+init { runner } =
+    let
+        ( compile, cmd ) =
+            Compile.start CompileTick defaultCode
+    in
     ( { lesson = "### Hello, World!"
       , output = Loading
-      , editorValue = defaultEditorValue
+      , compile = compile
+      , runner = runner
       }
-    , send "NEW_EDITOR" [ ( "id", E.string codeEditorId ) ]
+    , Cmd.batch
+        [ cmd
+        , send "NEW_EDITOR" [ ( "id", E.string codeEditorId ) ]
+        ]
     )
 
 
-defaultEditorValue : String
-defaultEditorValue =
-    "main =\n    text \"Hello, World!\"\n"
+defaultCode : String
+defaultCode =
+    "abc =\n    123\n\ngreeting =\n    \"Hello, World!\"\n"
 
 
 type Msg
     = NewCode String
+    | NewOutput Output
     | Resize
+    | CompileTick Compile.Tick
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NewCode value ->
-            ( { model | editorValue = value }, Cmd.none )
+            Compile.pushCode CompileTick value model.compile
+                |> Tuple.mapFirst (\new -> { model | compile = new })
+
+        NewOutput value ->
+            ( { model | output = value }, Cmd.none )
 
         Resize ->
             ( model, send "RESIZE_EDITORS" [ ( "id", E.string codeEditorId ) ] )
+
+        CompileTick tick ->
+            let
+                options =
+                    { runner = model.runner
+                    , onOutput = NewOutput << Html
+                    , onTick = CompileTick
+                    }
+            in
+            Compile.await options tick model.compile
+                |> Tuple.mapFirst (\new -> { model | compile = new })
 
 
 send : String -> List ( String, E.Value ) -> Cmd msg
@@ -67,7 +98,7 @@ view model =
     main_
         [ style "min-height" "100vh" ]
         [ halfPanel [ viewLesson model.lesson, viewOutput model.output ]
-        , halfPanel [ viewEditor model.editorValue ]
+        , halfPanel [ viewEditor model.compile ]
         ]
 
 
@@ -90,13 +121,18 @@ viewOutput output =
                         ++ " allow-popups"
                         ++ " allow-popups-to-escape-sandbox"
                 , style "width" "100%"
+                , style "border" "none"
                 ]
                 []
 
 
-viewEditor : String -> Html Msg
-viewEditor editorValue =
-    Editor.view { id = codeEditorId, value = editorValue, onInput = NewCode }
+viewEditor : Compile.State -> Html Msg
+viewEditor compile =
+    Editor.view
+        { id = codeEditorId
+        , value = Compile.latestCode compile
+        , onInput = NewCode
+        }
 
 
 viewDocument : Model -> Browser.Document Msg
@@ -121,7 +157,7 @@ codeEditorId =
 port toJs : E.Value -> Cmd msg
 
 
-main : Program () Model Msg
+main : Program Flags Model Msg
 main =
     Browser.document
         { init = init

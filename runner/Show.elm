@@ -15,16 +15,7 @@ row name value =
 
 table : List Row -> Html.Html Never
 table rows =
-    Html.table
-        []
-        [ thead []
-            [ tr []
-                [ th [] [ text "Name" ]
-                , th [] [ text "Value" ]
-                ]
-            ]
-        , tbody [] <| List.map drawRow rows
-        ]
+    Html.table [] [ tbody [] <| List.map drawRow rows ]
 
 
 drawRow : Row -> Html.Html Never

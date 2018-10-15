@@ -30,8 +30,8 @@ function resetEditorLayout(element) {
 
 window.onload = function() {
   const flags = location.hostname === "localhost"
-    ? { runnerUrl : "localhost:3001" }
-    : { runnerUrl : "https://excel-to-code--runner.herokuapp.com" };
+    ? { runner : "http://localhost:3001" }
+    : { runner : "https://excel-to-code--runner.herokuapp.com" };
   const app = Elm.Main.init({ flags: flags });
   app.ports.toJs.subscribe(function(msg) {
     switch(msg.tag) {
