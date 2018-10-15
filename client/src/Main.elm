@@ -75,8 +75,16 @@ update msg model =
             let
                 options =
                     { runner = model.runner
-                    , onOutput = NewOutput << Html
                     , onTick = CompileTick
+                    , onOutput =
+                        \result ->
+                            case result of
+                                Ok html ->
+                                    NewOutput (Html html)
+
+                                Err () ->
+                                    -- TODO
+                                    NewOutput Loading
                     }
             in
             Compile.await options tick model.compile

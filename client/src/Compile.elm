@@ -42,7 +42,14 @@ pushCode onTick new (State _ debounce) =
     ( State new newDebounce, debounceCmds )
 
 
-await : { runner : String, onOutput : String -> a, onTick : Tick -> a } -> Tick -> State -> ( State, Cmd a )
+await :
+    { runner : String
+    , onOutput : Result () String -> a
+    , onTick : Tick -> a
+    }
+    -> Tick
+    -> State
+    -> ( State, Cmd a )
 await options tick ((State _ debounce) as state) =
     let
         ( newDebounce, cmd ) =
@@ -59,7 +66,7 @@ prefixCode elm =
     "module Main exposing (..)\nimport Show\n" ++ elm
 
 
-compile : String -> (String -> a) -> String -> Cmd a
+compile : String -> (Result () String -> a) -> String -> Cmd a
 compile runner onOutput code =
     case
         Elm.Parser.parse code
@@ -76,21 +83,12 @@ compile runner onOutput code =
                     ++ "]"
 
 
-compileRemote : String -> (String -> a) -> String -> Cmd a
+compileRemote : String -> (Result () String -> a) -> String -> Cmd a
 compileRemote runner onOutput code =
     Http.post runner
         (Http.jsonBody (E.object [ ( "elm", E.string code ) ]))
         (D.field "output" D.string)
-        |> Http.send
-            (\result ->
-                case result of
-                    Ok html ->
-                        onOutput html
-
-                    Err reason ->
-                        Debug.log runner reason
-                            |> Debug.todo ""
-            )
+        |> Http.send (Result.mapError (\_ -> ()) >> onOutput)
 
 
 showDeclaraion : Node.Node Declaration -> Maybe String
