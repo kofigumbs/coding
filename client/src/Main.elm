@@ -129,6 +129,7 @@ viewOutput output =
                         ++ " allow-popups"
                         ++ " allow-popups-to-escape-sandbox"
                 , style "width" "100%"
+                , style "height" "100%"
                 , style "border" "none"
                 ]
                 []
