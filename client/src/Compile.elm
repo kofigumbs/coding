@@ -107,4 +107,4 @@ showDeclaraion target =
 
 debounceConfig : (Tick -> a) -> Debounce.Config a
 debounceConfig onTick =
-    { strategy = Debounce.later (0.5 * 60), transform = onTick }
+    { strategy = Debounce.later 1500, transform = onTick }
