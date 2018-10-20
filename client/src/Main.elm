@@ -14,14 +14,9 @@ import Markdown
 type alias Model =
     { runner : String
     , lesson : String
-    , output : Output
+    , output : Maybe Compile.Result
     , compile : Compile.State
     }
-
-
-type Output
-    = Loading
-    | Html String
 
 
 type alias Flags =
@@ -35,13 +30,16 @@ init { runner } =
             Compile.start CompileTick defaultCode
     in
     ( { lesson = "### Hello, World!"
-      , output = Loading
+      , output = Nothing
       , compile = compile
       , runner = runner
       }
     , Cmd.batch
         [ cmd
-        , send "NEW_EDITOR" [ ( "id", E.string codeEditorId ) ]
+        , send "NEW_EDITOR"
+            [ ( "id", E.string codeEditorId )
+            , ( "value", E.string defaultCode )
+            ]
         ]
     )
 
@@ -53,7 +51,7 @@ defaultCode =
 
 type Msg
     = NewCode String
-    | NewOutput Output
+    | NewOutput Compile.Result
     | Resize
     | CompileTick Compile.Tick
 
@@ -66,7 +64,7 @@ update msg model =
                 |> Tuple.mapFirst (\new -> { model | compile = new })
 
         NewOutput value ->
-            ( { model | output = value }, Cmd.none )
+            ( { model | output = Just value }, Cmd.none )
 
         Resize ->
             ( model, send "RESIZE_EDITORS" [ ( "id", E.string codeEditorId ) ] )
@@ -76,15 +74,7 @@ update msg model =
                 options =
                     { runner = model.runner
                     , onTick = CompileTick
-                    , onOutput =
-                        \result ->
-                            case result of
-                                Ok html ->
-                                    NewOutput (Html html)
-
-                                Err () ->
-                                    -- TODO
-                                    NewOutput Loading
+                    , onOutput = NewOutput
                     }
             in
             Compile.await options tick model.compile
@@ -115,13 +105,24 @@ viewLesson =
     Markdown.toHtml [ class "wysiwyg", style "padding" "1em" ]
 
 
-viewOutput : Output -> Html Msg
+viewOutput : Maybe Compile.Result -> Html Msg
 viewOutput output =
     case output of
-        Loading ->
+        Nothing ->
             Loading.view
 
-        Html raw ->
+        Just Compile.HttpError ->
+            mark [] [ text "Oops! Something went wrong with our site." ]
+
+        Just (Compile.ElmError raw) ->
+            pre
+                [ style "background-color" "#EEEEEE"
+                , style "border-radius" "2px"
+                , style "padding" "24px"
+                ]
+                [ text raw ]
+
+        Just (Compile.Html raw) ->
             iframe
                 [ srcdoc raw
                 , sandbox <|
@@ -137,11 +138,7 @@ viewOutput output =
 
 viewEditor : Compile.State -> Html Msg
 viewEditor compile =
-    Editor.view
-        { id = codeEditorId
-        , value = Compile.latestCode compile
-        , onInput = NewCode
-        }
+    Editor.view { id = codeEditorId, onInput = NewCode }
 
 
 viewDocument : Model -> Browser.Document Msg

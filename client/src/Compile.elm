@@ -1,4 +1,4 @@
-module Compile exposing (State, Tick, await, latestCode, pushCode, start)
+module Compile exposing (Result(..), State, Tick, await, pushCode, start)
 
 import Debounce exposing (Debounce)
 import Elm.Parser
@@ -12,7 +12,13 @@ import Task
 
 
 type State
-    = State String (Debounce String)
+    = State (Debounce String)
+
+
+type Result
+    = Html String
+    | ElmError String
+    | HttpError
 
 
 type alias Tick =
@@ -25,32 +31,27 @@ start onTick initialCode =
         ( debounce, cmds ) =
             Debounce.push (debounceConfig onTick) initialCode Debounce.init
     in
-    ( State initialCode debounce, cmds )
-
-
-latestCode : State -> String
-latestCode (State code _) =
-    code
+    ( State debounce, cmds )
 
 
 pushCode : (Tick -> a) -> String -> State -> ( State, Cmd a )
-pushCode onTick new (State _ debounce) =
+pushCode onTick new (State debounce) =
     let
         ( newDebounce, debounceCmds ) =
             Debounce.push (debounceConfig onTick) new debounce
     in
-    ( State new newDebounce, debounceCmds )
+    ( State newDebounce, debounceCmds )
 
 
 await :
     { runner : String
-    , onOutput : Result () String -> a
+    , onOutput : Result -> a
     , onTick : Tick -> a
     }
     -> Tick
     -> State
     -> ( State, Cmd a )
-await options tick ((State _ debounce) as state) =
+await options tick ((State debounce) as state) =
     let
         ( newDebounce, cmd ) =
             Debounce.update (debounceConfig options.onTick)
@@ -58,7 +59,7 @@ await options tick ((State _ debounce) as state) =
                 tick
                 debounce
     in
-    ( State (latestCode state) newDebounce, cmd )
+    ( State newDebounce, cmd )
 
 
 prefixCode : String -> String
@@ -66,7 +67,7 @@ prefixCode elm =
     "module Main exposing (..)\nimport Show\n" ++ elm
 
 
-compile : String -> (Result () String -> a) -> String -> Cmd a
+compile : String -> (Result -> a) -> String -> Cmd a
 compile runner onOutput code =
     case
         Elm.Parser.parse code
@@ -83,12 +84,16 @@ compile runner onOutput code =
                     ++ "]"
 
 
-compileRemote : String -> (Result () String -> a) -> String -> Cmd a
+compileRemote : String -> (Result -> a) -> String -> Cmd a
 compileRemote runner onOutput code =
     Http.post runner
         (Http.jsonBody (E.object [ ( "elm", E.string code ) ]))
-        (D.field "output" D.string)
-        |> Http.send (Result.mapError (\_ -> ()) >> onOutput)
+        (D.oneOf
+            [ D.map Html <| D.field "output" D.string
+            , D.map ElmError <| D.field "error" D.string
+            ]
+        )
+        |> Http.send (onOutput << Result.withDefault HttpError)
 
 
 showDeclaraion : Node.Node Declaration -> Maybe String

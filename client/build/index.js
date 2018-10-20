@@ -1,11 +1,11 @@
-function newEditor(app, id) {
+function newEditor(app, id, value) {
   const element = document.getElementById(id);
   element.editor = monaco.editor.create(element, {
     language: "elm",
     theme: "vs-dark",
     minimap: { enabled: false },
     scrollBeyondLastLine: false,
-    value: element.dataset.value,
+    value: value,
   });
 
   element.editor.onDidChangeModelContent(function() {
@@ -37,7 +37,7 @@ window.onload = function() {
     switch(msg.tag) {
       case "NEW_EDITOR":
         requestAnimationFrame(function() {
-          newEditor(app, msg.id);
+          newEditor(app, msg.id, msg.value);
         });
         break;
       case "RESIZE_EDITORS":
