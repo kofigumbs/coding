@@ -1,4 +1,4 @@
-module Compile exposing (Result(..), State, Tick, await, pushCode, start)
+module Compile exposing (Result(..), State, Tick, await, init, pushCode)
 
 import Debounce exposing (Debounce)
 import Elm.Parser
@@ -25,13 +25,9 @@ type alias Tick =
     Debounce.Msg
 
 
-start : (Tick -> a) -> String -> ( State, Cmd a )
-start onTick initialCode =
-    let
-        ( debounce, cmds ) =
-            Debounce.push (debounceConfig onTick) initialCode Debounce.init
-    in
-    ( State debounce, cmds )
+init : State
+init =
+    State Debounce.init
 
 
 pushCode : (Tick -> a) -> String -> State -> ( State, Cmd a )

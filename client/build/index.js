@@ -1,5 +1,9 @@
-function newEditor(app, id, value) {
+function newEditor(id, value) {
   const element = document.getElementById(id);
+
+  if (!element) return;
+  if (!!element.editor) return element.editor.setValue(value);
+
   element.editor = monaco.editor.create(element, {
     language: "elm",
     theme: "vs-dark",
@@ -37,10 +41,10 @@ window.onload = function() {
     switch(msg.tag) {
       case "NEW_EDITOR":
         requestAnimationFrame(function() {
-          newEditor(app, msg.id, msg.value);
+          newEditor(msg.id, msg.value);
         });
         break;
-      case "RESIZE_EDITORS":
+      case "RESIZE_EDITOR":
         resizeEditor(msg.id);
         break;
     }

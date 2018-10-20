@@ -9,9 +9,10 @@ import Html.Attributes
 view : Html.Html msg
 view =
     Html.div
-        [ Html.Attributes.style "left" "50%"
-        , Html.Attributes.style "position" "relative"
-        , Html.Attributes.style "transform" "translateY(100%)"
+        [ Html.Attributes.style "display" "flex"
+        , Html.Attributes.style "justify-content" "center"
+        , Html.Attributes.style "align-items" "center"
+        , Html.Attributes.style "height" "60px"
         ]
         [ Html.node "style" [] [ Html.text """
 .dot-bricks {

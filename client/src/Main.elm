@@ -2,55 +2,72 @@ port module Main exposing (main)
 
 import Browser
 import Browser.Events
+import Browser.Navigation
 import Compile
 import Editor
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Lazy exposing (..)
+import Http
 import Json.Encode as E
 import Loading
 import Markdown
+import Url exposing (Url)
 
 
 type alias Model =
-    { runner : String
-    , lesson : String
+    { key : Browser.Navigation.Key
+    , runner : String
+    , lesson : Maybe Lesson
     , output : Maybe Compile.Result
     , compile : Compile.State
     }
+
+
+type Lesson
+    = Lesson String
+    | Missing
 
 
 type alias Flags =
     { runner : String }
 
 
-init : Flags -> ( Model, Cmd Msg )
-init { runner } =
-    let
-        ( compile, cmd ) =
-            Compile.start CompileTick defaultCode
-    in
-    ( { lesson = "### Hello, World!"
+init : Flags -> Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
+init flags url key =
+    ( { key = key
+      , lesson = Nothing
       , output = Nothing
-      , compile = compile
-      , runner = runner
+      , compile = Compile.init
+      , runner = flags.runner
       }
-    , Cmd.batch
-        [ cmd
-        , send "NEW_EDITOR"
-            [ ( "id", E.string codeEditorId )
-            , ( "value", E.string defaultCode )
-            ]
-        ]
+    , getLesson url.fragment
     )
 
 
-defaultCode : String
-defaultCode =
-    "abc =\n    123\n\ngreeting =\n    \"Hello, World!\"\n"
+getLesson : Maybe String -> Cmd Msg
+getLesson fragment =
+    let
+        fetch toMsg extension =
+            Http.getString
+                ("/content/"
+                    ++ Maybe.withDefault defaultLesson fragment
+                    ++ "."
+                    ++ extension
+                )
+                |> Http.send
+                    (Result.map toMsg >> Result.withDefault (NewLesson Missing))
+    in
+    Cmd.batch
+        [ fetch NewCode "elm"
+        , fetch (NewLesson << Lesson) "md"
+        ]
 
 
 type Msg
-    = NewCode String
+    = NewUrl Browser.UrlRequest
+    | NewLesson Lesson
+    | NewCode String
     | NewOutput Compile.Result
     | Resize
     | CompileTick Compile.Tick
@@ -59,15 +76,27 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NewUrl (Browser.External raw) ->
+            ( model, Browser.Navigation.load raw )
+
+        NewUrl (Browser.Internal url) ->
+            ( { model | lesson = Nothing }, getLesson url.fragment )
+
+        NewLesson lesson ->
+            ( { model | lesson = Just lesson }, Cmd.none )
+
         NewCode value ->
-            Compile.pushCode CompileTick value model.compile
-                |> Tuple.mapFirst (\new -> { model | compile = new })
+            let
+                ( compile, cmd ) =
+                    Compile.pushCode CompileTick value model.compile
+            in
+            ( { model | compile = compile }, Cmd.batch [ cmd, newEditor value ] )
 
         NewOutput value ->
             ( { model | output = Just value }, Cmd.none )
 
         Resize ->
-            ( model, send "RESIZE_EDITORS" [ ( "id", E.string codeEditorId ) ] )
+            ( model, resizeEditor )
 
         CompileTick tick ->
             let
@@ -79,6 +108,19 @@ update msg model =
             in
             Compile.await options tick model.compile
                 |> Tuple.mapFirst (\new -> { model | compile = new })
+
+
+newEditor : String -> Cmd msg
+newEditor value =
+    send "NEW_EDITOR"
+        [ ( "value", E.string value )
+        , ( "id", E.string codeEditorId )
+        ]
+
+
+resizeEditor : Cmd msg
+resizeEditor =
+    send "RESIZE_EDITOR" [ ( "id", E.string codeEditorId ) ]
 
 
 send : String -> List ( String, E.Value ) -> Cmd msg
@@ -93,16 +135,27 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    main_
-        [ style "min-height" "100vh" ]
-        [ halfPanel [ viewLesson model.lesson, viewOutput model.output ]
-        , halfPanel [ viewEditor model.compile ]
-        ]
+    case model.lesson of
+        Nothing ->
+            Loading.view
+
+        Just Missing ->
+            viewError
+
+        Just (Lesson lesson) ->
+            main_
+                [ style "min-height" "100vh" ]
+                [ halfPanel
+                    [ lazy viewLesson lesson
+                    , lazy viewOutput model.output
+                    ]
+                , halfPanel [ viewEditor model.compile ]
+                ]
 
 
 viewLesson : String -> Html Msg
 viewLesson =
-    Markdown.toHtml [ class "wysiwyg", style "padding" "1em" ]
+    Markdown.toHtml frameStyles
 
 
 viewOutput : Maybe Compile.Result -> Html Msg
@@ -112,7 +165,7 @@ viewOutput output =
             Loading.view
 
         Just Compile.HttpError ->
-            mark [] [ text "Oops! Something went wrong with our site." ]
+            viewError
 
         Just (Compile.ElmError raw) ->
             pre
@@ -141,9 +194,10 @@ viewEditor compile =
     Editor.view { id = codeEditorId, onInput = NewCode }
 
 
-viewDocument : Model -> Browser.Document Msg
-viewDocument model =
-    { title = "Coding", body = [ view model ] }
+viewError : Html msg
+viewError =
+    div frameStyles
+        [ h1 [] [ text "Oops! Something went wrong with our site." ] ]
 
 
 halfPanel : List (Html msg) -> Html msg
@@ -155,19 +209,36 @@ halfPanel =
         ]
 
 
-codeEditorId : String
-codeEditorId =
-    "main-code-editor"
+frameStyles : List (Attribute msg)
+frameStyles =
+    [ class "wysiwyg", style "padding" "1em" ]
+
+
+withDocument : Html msg -> Browser.Document msg
+withDocument root =
+    { title = "Coding", body = [ root ] }
 
 
 port toJs : E.Value -> Cmd msg
 
 
+defaultLesson : String
+defaultLesson =
+    "hello-world"
+
+
+codeEditorId : String
+codeEditorId =
+    "main-code-editor"
+
+
 main : Program Flags Model Msg
 main =
-    Browser.document
+    Browser.application
         { init = init
+        , onUrlChange = NewUrl << Browser.Internal
+        , onUrlRequest = NewUrl
         , update = update
         , subscriptions = subscriptions
-        , view = viewDocument
+        , view = withDocument << view
         }
