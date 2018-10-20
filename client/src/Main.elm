@@ -80,7 +80,7 @@ update msg model =
             ( model, Browser.Navigation.load raw )
 
         NewUrl (Browser.Internal url) ->
-            ( { model | lesson = Nothing }, getLesson url.fragment )
+            ( { model | lesson = Nothing, output = Nothing }, getLesson url.fragment )
 
         NewLesson lesson ->
             ( { model | lesson = Just lesson }, Cmd.none )
