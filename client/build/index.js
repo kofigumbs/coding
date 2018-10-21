@@ -2,7 +2,7 @@ function newEditor(id, value) {
   const element = document.getElementById(id);
 
   if (!element) return;
-  if (!!element.editor) return element.editor.setValue(value);
+  if (!!element.editor) return setValue(element.editor, value);
 
   element.editor = monaco.editor.create(element, {
     language: "elm",
@@ -19,6 +19,10 @@ function newEditor(id, value) {
   });
 
   resetEditorLayout(element);
+}
+
+function setValue(editor, value) {
+  if (editor.getValue() !== value) editor.setValue(value);
 }
 
 function resizeEditor(id) {

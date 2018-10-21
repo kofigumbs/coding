@@ -4,24 +4,29 @@ import Browser
 import Browser.Events
 import Browser.Navigation
 import Compile
-import Editor
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Lazy exposing (..)
 import Http
-import Json.Encode as E
-import Loading
+import Js
+import Js.Editor
+import Loading exposing (Loading)
 import Markdown
 import Url exposing (Url)
 
 
 type alias Model =
     { key : Browser.Navigation.Key
-    , runner : String
-    , lesson : Maybe Lesson
-    , output : Maybe Compile.Result
+    , lessonId : LessonId
+    , lesson : Loading Lesson
+    , output : Loading Compile.Result
     , compile : Compile.State
+    , runner : String
     }
+
+
+type LessonId
+    = LessonId String
 
 
 type Lesson
@@ -35,26 +40,32 @@ type alias Flags =
 
 init : Flags -> Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
 init flags url key =
+    let
+        lessonId =
+            fromFragment url.fragment
+    in
     ( { key = key
-      , lesson = Nothing
-      , output = Nothing
+      , lessonId = lessonId
+      , lesson = Loading.Loading
+      , output = Loading.Loading
       , compile = Compile.init
       , runner = flags.runner
       }
-    , getLesson url.fragment
+    , getLesson lessonId
     )
 
 
-getLesson : Maybe String -> Cmd Msg
-getLesson fragment =
+fromFragment : Maybe String -> LessonId
+fromFragment =
+    LessonId << Maybe.withDefault defaultLesson
+
+
+getLesson : LessonId -> Cmd Msg
+getLesson (LessonId segment) =
     let
         fetch toMsg extension =
             Http.getString
-                ("/content/"
-                    ++ Maybe.withDefault defaultLesson fragment
-                    ++ "."
-                    ++ extension
-                )
+                ("/content/" ++ segment ++ "." ++ extension)
                 |> Http.send
                     (Result.map toMsg >> Result.withDefault (NewLesson Missing))
     in
@@ -80,23 +91,35 @@ update msg model =
             ( model, Browser.Navigation.load raw )
 
         NewUrl (Browser.Internal url) ->
-            ( { model | lesson = Nothing, output = Nothing }, getLesson url.fragment )
+            let
+                lessonId =
+                    fromFragment url.fragment
+            in
+            ( { model
+                | lessonId = lessonId
+                , lesson = Loading.Loading
+                , output = Loading.Loading
+              }
+            , getLesson lessonId
+            )
 
         NewLesson lesson ->
-            ( { model | lesson = Just lesson }, Cmd.none )
+            ( { model | lesson = Loading.Done lesson }, Cmd.none )
 
         NewCode value ->
             let
                 ( compile, cmd ) =
                     Compile.pushCode CompileTick value model.compile
             in
-            ( { model | compile = compile }, Cmd.batch [ cmd, newEditor value ] )
+            ( { model | compile = compile }
+            , Cmd.batch [ cmd, Js.Editor.new value ]
+            )
 
         NewOutput value ->
-            ( { model | output = Just value }, Cmd.none )
+            ( { model | output = Loading.Done value }, Cmd.none )
 
         Resize ->
-            ( model, resizeEditor )
+            ( model, Js.Editor.resize )
 
         CompileTick tick ->
             let
@@ -110,24 +133,6 @@ update msg model =
                 |> Tuple.mapFirst (\new -> { model | compile = new })
 
 
-newEditor : String -> Cmd msg
-newEditor value =
-    send "NEW_EDITOR"
-        [ ( "value", E.string value )
-        , ( "id", E.string codeEditorId )
-        ]
-
-
-resizeEditor : Cmd msg
-resizeEditor =
-    send "RESIZE_EDITOR" [ ( "id", E.string codeEditorId ) ]
-
-
-send : String -> List ( String, E.Value ) -> Cmd msg
-send tag data =
-    toJs <| E.object (( "tag", E.string tag ) :: data)
-
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Browser.Events.onResize (\_ _ -> Resize)
@@ -136,13 +141,13 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     case model.lesson of
-        Nothing ->
+        Loading.Loading ->
             Loading.view
 
-        Just Missing ->
+        Loading.Done Missing ->
             viewError
 
-        Just (Lesson lesson) ->
+        Loading.Done (Lesson lesson) ->
             main_
                 [ style "min-height" "100vh" ]
                 [ halfPanel
@@ -155,19 +160,19 @@ view model =
 
 viewLesson : String -> Html Msg
 viewLesson =
-    Markdown.toHtml frameStyles
+    Markdown.toHtml contentStyles
 
 
-viewOutput : Maybe Compile.Result -> Html Msg
+viewOutput : Loading Compile.Result -> Html Msg
 viewOutput output =
     case output of
-        Nothing ->
+        Loading.Loading ->
             Loading.view
 
-        Just Compile.HttpError ->
+        Loading.Done Compile.HttpError ->
             viewError
 
-        Just (Compile.ElmError raw) ->
+        Loading.Done (Compile.ElmError raw) ->
             pre
                 [ style "background-color" "#EEEEEE"
                 , style "border-radius" "2px"
@@ -175,7 +180,7 @@ viewOutput output =
                 ]
                 [ text raw ]
 
-        Just (Compile.Html raw) ->
+        Loading.Done (Compile.Html raw) ->
             iframe
                 [ srcdoc raw
                 , sandbox <|
@@ -191,12 +196,12 @@ viewOutput output =
 
 viewEditor : Compile.State -> Html Msg
 viewEditor compile =
-    Editor.view { id = codeEditorId, onInput = NewCode }
+    Js.Editor.view { onInput = NewCode }
 
 
 viewError : Html msg
 viewError =
-    div frameStyles
+    div contentStyles
         [ h1 [] [ text "Oops! Something went wrong with our site." ] ]
 
 
@@ -209,8 +214,8 @@ halfPanel =
         ]
 
 
-frameStyles : List (Attribute msg)
-frameStyles =
+contentStyles : List (Attribute msg)
+contentStyles =
     [ class "wysiwyg", style "padding" "1em" ]
 
 
@@ -219,17 +224,9 @@ withDocument root =
     { title = "Coding", body = [ root ] }
 
 
-port toJs : E.Value -> Cmd msg
-
-
 defaultLesson : String
 defaultLesson =
     "hello-world"
-
-
-codeEditorId : String
-codeEditorId =
-    "main-code-editor"
 
 
 main : Program Flags Model Msg

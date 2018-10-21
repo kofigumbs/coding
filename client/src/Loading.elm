@@ -1,7 +1,12 @@
-module Loading exposing (view)
+module Loading exposing (Loading(..), view)
 
 import Html
 import Html.Attributes
+
+
+type Loading a
+    = Loading
+    | Done a
 
 
 {-| <https://nzbin.github.io/three-dots/>
