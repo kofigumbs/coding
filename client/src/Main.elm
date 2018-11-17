@@ -10,6 +10,7 @@ import Html.Lazy exposing (..)
 import Http
 import Js
 import Js.Editor
+import Json.Decode as D
 import Loading exposing (Loading)
 import Markdown
 import Url exposing (Url)
@@ -82,7 +83,7 @@ type Msg
     | NewOutput Compile.Result
     | Resize
     | CompileTick Compile.Tick
-    | IframeMessage
+    | IframeMessage Diff
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -133,16 +134,42 @@ update msg model =
             Compile.await options tick model.compile
                 |> Tuple.mapFirst (\new -> { model | compile = new })
 
-        IframeMessage ->
-            Debug.log "GOT IT" ( model, Cmd.none )
+        IframeMessage diff ->
+            let
+                _ =
+                    Debug.log "DIFF" diff
+            in
+            ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Browser.Events.onResize (\_ _ -> Resize)
-        , Js.onIframeEvent (\_ -> IframeMessage)
+        , Js.onMessage <|
+            \json ->
+                case D.decodeValue diffDecoder json of
+                    Err _ ->
+                        Debug.todo ""
+
+                    Ok diff ->
+                        IframeMessage diff
         ]
+
+
+type alias Diff =
+    -- TODO different types: edit text, edit number, edit graph
+    { name : String
+    , value : String
+    }
+
+
+diffDecoder : D.Decoder Diff
+diffDecoder =
+    D.field "data" <|
+        D.map2 Diff
+            (D.field "name" D.string)
+            (D.field "value" D.string)
 
 
 view : Model -> Html Msg

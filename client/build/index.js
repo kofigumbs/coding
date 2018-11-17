@@ -54,7 +54,7 @@ window.onload = function() {
     }
   });
 
-  window.addEventListener("message", function() {
-    app.ports.onIframeEvent.send({});
+  window.addEventListener("message", function(e) {
+    app.ports.onMessage.send(e);
   });
 };

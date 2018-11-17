@@ -2,7 +2,6 @@ module Show exposing (row, table)
 
 import Html exposing (..)
 import Html.Attributes
-import Native.Show
 
 
 type Row
@@ -11,7 +10,7 @@ type Row
 
 row : String -> a -> Row
 row name value =
-    Row name <| Native.Show.anything value
+    Row name <| textInput name (toString value)
 
 
 table : List Row -> Html.Html Never
@@ -24,16 +23,14 @@ drawRow (Row name html) =
     tr [] [ td [] [ text name ], td [] [ html ] ]
 
 
-
--- HACKS, this is called from the Native module
-
-
-textInput : String -> Html a
-textInput s =
+textInput : String -> String -> Html a
+textInput name raw =
     input
-        [ Html.Attributes.value s
-        , Html.Attributes.attribute
-            "oninput"
-            "console.log('in iframe'); window.parent.postMessage('message', '*')"
+        [ Html.Attributes.value raw
+        , Html.Attributes.attribute "oninput" <|
+            "window.parent.postMessage("
+                ++ "{ type: 'edit-text-row', name: '"
+                ++ name
+                ++ "', value: this.value }, '*')"
         ]
         []
