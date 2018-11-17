@@ -10,6 +10,7 @@ import Html.Lazy exposing (..)
 import Http
 import Js
 import Js.Editor
+import Json.Decode as D
 import Loading exposing (Loading)
 import Markdown
 import Url exposing (Url)
@@ -76,17 +77,22 @@ getLesson (LessonId segment) =
 
 
 type Msg
-    = NewUrl Browser.UrlRequest
+    = NoOp
+    | NewUrl Browser.UrlRequest
     | NewLesson Lesson
     | NewCode String
     | NewOutput Compile.Result
     | Resize
     | CompileTick Compile.Tick
+    | NewDiff Compile.Diff
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
         NewUrl (Browser.External raw) ->
             ( model, Browser.Navigation.load raw )
 
@@ -132,10 +138,19 @@ update msg model =
             Compile.await options tick model.compile
                 |> Tuple.mapFirst (\new -> { model | compile = new })
 
+        NewDiff diff ->
+            ( model, Js.Editor.new (Compile.applyToCode model.compile diff) )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Browser.Events.onResize (\_ _ -> Resize)
+    Sub.batch
+        [ Browser.Events.onResize (\_ _ -> Resize)
+        , Js.onMessage <|
+            D.decodeValue Compile.diff
+                >> Result.map NewDiff
+                >> Result.withDefault NoOp
+        ]
 
 
 view : Model -> Html Msg
@@ -180,9 +195,9 @@ viewOutput output =
                 ]
                 [ text raw ]
 
-        Loading.Done (Compile.Html raw) ->
+        Loading.Done (Compile.Success html) ->
             iframe
-                [ srcdoc raw
+                [ srcdoc html
                 , sandbox <|
                     "allow-scripts"
                         ++ " allow-popups"

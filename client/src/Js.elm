@@ -1,4 +1,4 @@
-port module Js exposing (send)
+port module Js exposing (onMessage, send)
 
 import Json.Encode as E
 
@@ -9,3 +9,6 @@ send tag data =
 
 
 port toJs : E.Value -> Cmd msg
+
+
+port onMessage : (E.Value -> msg) -> Sub msg

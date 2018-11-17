@@ -53,4 +53,8 @@ window.onload = function() {
         break;
     }
   });
+
+  window.addEventListener("message", function(e) {
+    app.ports.onMessage.send(e);
+  });
 };
