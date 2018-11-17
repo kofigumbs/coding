@@ -77,18 +77,22 @@ getLesson (LessonId segment) =
 
 
 type Msg
-    = NewUrl Browser.UrlRequest
+    = NoOp
+    | NewUrl Browser.UrlRequest
     | NewLesson Lesson
     | NewCode String
     | NewOutput Compile.Result
     | Resize
     | CompileTick Compile.Tick
-    | IframeMessage Diff
+    | NewDiff Compile.Diff
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
         NewUrl (Browser.External raw) ->
             ( model, Browser.Navigation.load raw )
 
@@ -134,12 +138,8 @@ update msg model =
             Compile.await options tick model.compile
                 |> Tuple.mapFirst (\new -> { model | compile = new })
 
-        IframeMessage diff ->
-            let
-                _ =
-                    Debug.log "DIFF" diff
-            in
-            ( model, Cmd.none )
+        NewDiff diff ->
+            ( model, Js.Editor.new (Compile.applyToCode model.compile diff) )
 
 
 subscriptions : Model -> Sub Msg
@@ -147,29 +147,10 @@ subscriptions model =
     Sub.batch
         [ Browser.Events.onResize (\_ _ -> Resize)
         , Js.onMessage <|
-            \json ->
-                case D.decodeValue diffDecoder json of
-                    Err _ ->
-                        Debug.todo ""
-
-                    Ok diff ->
-                        IframeMessage diff
+            D.decodeValue Compile.diff
+                >> Result.map NewDiff
+                >> Result.withDefault NoOp
         ]
-
-
-type alias Diff =
-    -- TODO different types: edit text, edit number, edit graph
-    { name : String
-    , value : String
-    }
-
-
-diffDecoder : D.Decoder Diff
-diffDecoder =
-    D.field "data" <|
-        D.map2 Diff
-            (D.field "name" D.string)
-            (D.field "value" D.string)
 
 
 view : Model -> Html Msg
@@ -214,9 +195,9 @@ viewOutput output =
                 ]
                 [ text raw ]
 
-        Loading.Done (Compile.Html raw) ->
+        Loading.Done (Compile.Success html) ->
             iframe
-                [ srcdoc raw
+                [ srcdoc html
                 , sandbox <|
                     "allow-scripts"
                         ++ " allow-popups"
