@@ -82,6 +82,7 @@ type Msg
     | NewOutput Compile.Result
     | Resize
     | CompileTick Compile.Tick
+    | IframeMessage
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -132,10 +133,16 @@ update msg model =
             Compile.await options tick model.compile
                 |> Tuple.mapFirst (\new -> { model | compile = new })
 
+        IframeMessage ->
+            Debug.log "GOT IT" ( model, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Browser.Events.onResize (\_ _ -> Resize)
+    Sub.batch
+        [ Browser.Events.onResize (\_ _ -> Resize)
+        , Js.onIframeEvent (\_ -> IframeMessage)
+        ]
 
 
 view : Model -> Html Msg

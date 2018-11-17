@@ -1,4 +1,4 @@
-port module Js exposing (send)
+port module Js exposing (onIframeEvent, send)
 
 import Json.Encode as E
 
@@ -9,3 +9,6 @@ send tag data =
 
 
 port toJs : E.Value -> Cmd msg
+
+
+port onIframeEvent : ({} -> msg) -> Sub msg

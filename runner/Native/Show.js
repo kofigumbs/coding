@@ -3,7 +3,7 @@ var _user$project$Native_Show = {
     if(x.type /* VIRTUAL-DOM FIELD */) {
       return x;
     } else {
-      return _elm_lang$virtual_dom$Native_VirtualDom.text(
+      return _user$project$Show$textInput(
         _elm_lang$core$Native_Utils.toString(x)
       );
     }
