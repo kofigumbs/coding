@@ -1,6 +1,6 @@
 .PHONY: default dev-client dev-runner
 default:
-	cd client && npm install -g elm && elm make src/Main.elm --optimize --output build/elm.js
+	cd client && npm install -g elm@0.19.0 && elm make src/Main.elm --optimize --output build/elm.js
 
 dev-client:
 	cd client && \
